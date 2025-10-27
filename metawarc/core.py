@@ -6,12 +6,16 @@ import click
 import os
 import glob
 
-from .cmds.indexer import Indexer
-from .cmds.dump import Dumper
-
+import uvicorn
+from fastmcp import FastMCP
 # Required to suppress Hachoir warnings
 from hachoir.core import config as HachoirConfig
 HachoirConfig.quiet = True
+
+
+from .cmds.indexer import Indexer
+from .cmds.dump import Dumper
+from .cmds.server import create_app
 
 # logging.getLogger().addHandler(logging.StreamHandler())
 #logging.basicConfig(
@@ -36,11 +40,7 @@ def cli4():
 @click.option("--tofile",
               "-o",
               default="warcindex.db",
-              help="Name of the output db file. Default: warcindex.db")     
-@click.option("--tables",
-              "-t",
-              default="",
-              help="Comma separated list of tables. Default: links. Possible values: links, pdfs, images, ooxmldocs, oledocs")                          
+              help="Name of the output db file. Default: warcindex.db")                          
 @click.option("--update",
               "-u",
               is_flag=True,
@@ -58,7 +58,7 @@ def cli4():
               "-v",
               is_flag=True,
               help="Verbose output. Print additional info")          
-def warcindex(inputfile:str, tofile:str, tables:str, update:bool=True, rescan:bool=False, silent:bool=False, verbose:bool=True):
+def warcindex(inputfile:str, tofile:str, update:bool=True, rescan:bool=False, silent:bool=False, verbose:bool=True):
     """Builds WARC file index as DuckDB database file and accompanied Parquet files"""
     if verbose:
         enableVerbose()
@@ -77,10 +77,7 @@ def cli9():
     pass
 
 @cli9.command(name="index-content")
-@click.option("--inputfiles",
-              "-i",
-              default=None,
-              help="List of input files (globbed)")     
+@click.argument("inputfile")
 @click.option("--tofile",
               "-o",
               default="warcindex.db",
@@ -101,18 +98,15 @@ def cli9():
               "-v",
               is_flag=True,
               help="Verbose output. Print additional info")          
-def index_content(inputfiles:str, tofile:str, tables:str, update:bool=True, rescan:bool=True, silent:bool=False, verbose:bool=True):
-    """Builds WARC file index as DuckDB database file"""
+def index_content(inputfile:str, tofile:str, tables:str, update:bool=True, rescan:bool=True, silent:bool=False, verbose:bool=True):
+    """Generated additional indexes"""
     if verbose:
         enableVerbose()
     if os.path.exists(tofile) and not update:
         print(f'Output database {tofile} already exists. Please choose another file name or use update option')
         return
     acmd = Indexer()
-    if inputfiles is not None and len(inputfiles) == 0:
-        files = glob.glob(inputfiles)
-    else:
-        files = None
+    files = glob.glob(inputfile.strip("'"))    
     for table in tables.split(','):
         acmd.index_by_table_type(files, tofile, table_type=table, rescan=rescan, silent=silent)
     pass
@@ -169,12 +163,12 @@ def cli6():
               "-o",
               default=None,
               help="Output file (CSV)")
-def listfiles(warcfiles:str=None, mimes:str=None, exts:str=None, query:str=None, verbose:bool=False, output:str=None):
+def listfiles(warcfileids:str=None, mimes:str=None, exts:str=None, query:str=None, verbose:bool=False, output:str=None):
     """Lists urls inside WARC file"""
     if verbose:
         enableVerbose()
     acmd = Dumper()
-    acmd.listfiles(warcfiles=warcfiles, mimes=mimes, exts=exts, query=query, output=output)
+    acmd.listfiles(warcfileids=warcfileids, mimes=mimes, exts=exts, query=query, output=output)
     pass
 
 @click.group()
@@ -289,7 +283,36 @@ def get(fileid:str, dbfile:str, output:str=None, silent:bool=False, verbose:bool
     pass
 
 
-cli = click.CommandCollection(sources=[cli1, cli2, cli4, cli5, cli6, cli7, cli9])
+@click.group()
+def cli3():
+    pass
+
+@cli2.command(name="serve")
+def serve(silent:bool=False, verbose:bool=True):
+    """Run Metawarc REST API server"""
+    if verbose:
+        enableVerbose()
+    app = create_app()
+    config = uvicorn.Config('metawarc.cmds.server:app', port=5000, log_level="info")
+    server = uvicorn.Server(config)
+    server.run()
+
+@click.group()
+def cli8():
+    pass
+
+@cli8.command(name="mcp")
+def mcp(silent:bool=False, verbose:bool=True):
+    """Run Metawarc MCP server"""
+    if verbose:
+        enableVerbose()
+    app = create_app()
+
+    mcp = FastMCP.from_fastapi(app=app)
+    mcp.run(transport="http", port=8191)
+
+
+cli = click.CommandCollection(sources=[cli1, cli2, cli3, cli4, cli5, cli6, cli7, cli8, cli9])
 
 # if __name__ == '__main__':
 #    cli()

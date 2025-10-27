@@ -36,6 +36,7 @@ tests_require = [
 
 install_requires = [
     'warcio',
+    'fastwarc',
     'pdfminer',
     'click',
     'rich',
@@ -76,6 +77,7 @@ setup(
     url='https://github.com/ruarxive/metawarc/',
     download_url='https://github.com/ruarxive/metawarc/',
     packages=find_packages(exclude=('tests', 'tests.*')),
+    package_data={'templates': ['*.html']},    
     include_package_data=True,
     author=metawarc.__author__,
     author_email='ivan@begtin.tech',

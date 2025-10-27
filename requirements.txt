@@ -9,4 +9,5 @@ rich
 pyarrow
 duckdb
 bs4
+fastwarc
 tqdm

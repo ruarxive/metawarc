@@ -28,7 +28,7 @@ class Dumper:
     def __init__(self):
         pass
 
-    def listfiles(self, warcfiles:str=None, dbfile:str='warcindex.db', mimes:list=None, exts:list=None, query:str=None, start:int=0, limit:int=1000, output:str=None, silent:bool=False):
+    def listfiles(self, warcfileids:str=None, dbfile:str='warcindex.db', mimes:list=None, exts:list=None, query:str=None, start:int=0, limit:int=1000, output:str=None, silent:bool=False):
         """Lists files in WARC file"""
         from rich.table import Table
         from rich import print
@@ -39,28 +39,28 @@ class Dumper:
             print('Plese generate %s database with "metawarc index <filename.warc> command"' % dbfile)
             return
 
-        if warcfiles  is None:
-            files = [item['filename'] for item in con.sql('select filename from files;').df().to_dict('records')]
+        if warcfileids  is None:
+            ids = [item['id'] for item in con.sql('select id from files;').df().to_dict('records')]
         else:
-            files = warcfiles            
+            ids = warcfilesids            
 
         headers = ['offset', 'url', 'length', 'content_type', 'ext', 'warc_id']
         prep_headers = ','.join(['"' + sub + '"' for sub in headers]) 
         results = None
         outdata = []
 
-        for filename in files:
-            rectables = con.sql(f"select * from tables where type = 'records' and warcfile = \'{filename}\';").df().to_dict('records')
+        for wf_id in ids:
+            rectables = con.sql(f"select * from tables where type = 'records' and wf_id = \'{wf_id}\';").df().to_dict('records')
             if len(rectables) == 0:
                 if not silent:
-                    print(f'Records table for {filename} not found. Please reindex')
+                    print(f'Records table for {wf_id} not found. Please reindex')
                 continue
             else:
                 recfilepath = rectables[0]['path']
 
             if not os.path.exists(recfilepath):
                 if not silent:
-                    print(f'Records table file {recfilepath} for {filename} not found. Please reindex or ignore')
+                    print(f'Records table file {recfilepath} for {wf_id} not found. Please reindex or ignore')
                 continue
 
 

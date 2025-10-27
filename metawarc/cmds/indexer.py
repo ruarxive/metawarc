@@ -8,6 +8,7 @@ from warcio import ArchiveIterator
 from warcio.utils import BUFF_SIZE
 import duckdb
 import pyarrow as pa
+import uuid
 from io import BytesIO
 import glob
 import tqdm
@@ -84,7 +85,7 @@ class Indexer:
         glob_tables = [x[0] for x in con.sql('show tables').fetchall()]
 
         for fromfile in fromfiles:
-            file_record = {'filename' : fromfile, 'filesize' : os.path.getsize(fromfile)}
+            file_record = {'id' : uuid.uuid4().hex, 'fullpath' : fromfile, 'filename' : os.path.basename(fromfile), 'filesize' : os.path.getsize(fromfile)}
             logging.debug("Indexing %s" % fromfile)
             resp = open(fromfile, "rb")  
             file_basename = os.path.basename(fromfile).lower()
@@ -93,7 +94,7 @@ class Indexer:
             elif file_basename[-8:] == '.warc.gz': 
                 file_basename = file_basename[0:-8]
 
-            table_filename = 'data/' + file_basename + f'_records.parquet'
+            table_filename = 'data/' + file_record['id'] + f'_records.parquet'
             if os.path.exists(table_filename):
                 if not rescan:
                     if not silent:
@@ -171,15 +172,15 @@ class Indexer:
             if 'records' in real_tables:               
                 if len(list_records) > 0: 
                     dump_table(filename=table_filename, table=list_records, con=con)
-                    list_tables.append({'warcfile' : fromfile, 'path' :table_filename, 'type' : 'records', 'num_items' : len(list_records)})
+                    list_tables.append({'wf_id' : file_record['id'], 'wf_filename' : fromfile, 'path' :table_filename, 'type' : 'records', 'num_items' : len(list_records)})
                     if not silent:
                         print('- saved %s with %s' % (table_filename, 'records'))
             if 'headers' in real_tables:
                 if len(list_headers) > 0:
-                    dump_table(filename='data/' +file_basename + '_headers.parquet', table=list_headers, con=con)
-                    list_tables.append({'warcfile' : fromfile, 'path' :'data/' + file_basename + '_headers.parquet', 'type' : 'headers', 'num_items' : len(list_headers)})
+                    dump_table(filename='data/' + file_record['id'] + '_headers.parquet', table=list_headers, con=con)
+                    list_tables.append({'wf_id' : file_record['id'], 'wf_filename' : fromfile, 'path' :'data/' + file_record['id'] + '_headers.parquet', 'type' : 'headers', 'num_items' : len(list_headers)})
                     if not silent:
-                        print('- saved %s with %s' % ('data/' + file_basename + '_headers.parquet', 'headers'))
+                        print('- saved %s with %s' % ('data/' + file_record['id'] + '_headers.parquet', 'headers'))
             file_record['num_records'] = len(list_records)
             list_files.append(file_record)
 
@@ -188,13 +189,13 @@ class Indexer:
         
         pa_files = pa.Table.from_pylist(list_files)
         if 'files' not in glob_tables:
-            con.sql("CREATE TABLE files (filename VARCHAR PRIMARY KEY,filesize BIGINT, num_records INTEGER);")
+            con.sql("CREATE TABLE files (id VARCHAR, fullpath VARCHAR, filename VARCHAR PRIMARY KEY,filesize BIGINT, num_records INTEGER);")
             con.sql("INSERT OR REPLACE INTO files SELECT * FROM pa_files")
         else:
             con.sql("INSERT OR REPLACE INTO files SELECT * FROM pa_files")        
         pa_tables = pa.Table.from_pylist(list_tables)
         if 'tables' not in glob_tables:
-            con.sql("CREATE TABLE tables (warcfile VARCHAR, path VARCHAR PRIMARY KEY, type VARCHAR, num_items INTEGER);")
+            con.sql("CREATE TABLE tables (wf_id VARCHAR, wf_filename VARCHAR, path VARCHAR PRIMARY KEY, type VARCHAR, num_items INTEGER);")
             con.sql("INSERT OR REPLACE INTO tables SELECT * FROM pa_tables")
         else:
             con.sql("INSERT OR REPLACE INTO tables SELECT * FROM pa_tables")        
@@ -216,7 +217,9 @@ class Indexer:
         filetypes = MIMES_EXT_TYPE_BY_GROUP[content_group]['exts']
 
         for filename in files:
-            rectables = con.sql(f"select * from tables where type = 'records' and warcfile = \'{filename}\';").df().to_dict('records')
+            warc_file_rec = con.sql(f"select id from files where fullpath = '{filename}';").fetchone()
+            wf_id = warc_file_rec[0]
+            rectables = con.sql(f"select * from tables where type = 'records' and wf_id = \'{wf_id}\';").df().to_dict('records')
             if len(rectables) == 0:
                 if not silent:
                     print(f'Records table for {filename} not found. Please reindex')
@@ -232,18 +235,17 @@ class Indexer:
                 file_basename - file_basename[0:-5]
             elif file_basename[-8:] == '.warc.gz': 
                 file_basename = file_basename[0:-8]
-            
-            list_items = []
+            list_items = []            
 
-            table_filename = 'data/' + file_basename + f'_{table_type}.parquet'
+            table_filename = 'data/' + wf_id + f'_{table_type}.parquet'
             if os.path.exists(table_filename):
                 if not rescan:
                     if not silent:
-                        print('Fole {table_filename} already exists and rescan option not set. Skipping')
+                        print('File {table_filename} already exists and rescan option not set. Skipping')
                         continue
                 else:
                     if not silent:
-                        print('Fole {table_filename} already exists but rescan option set. Processing')
+                        print('File {table_filename} already exists but rescan option set. Processing')
 
             warcf = open(filename, "rb")  
             content_types = ','.join(["'" + sub + "'" for sub in mimetypes])
@@ -266,7 +268,7 @@ class Indexer:
                         root = BeautifulSoup(out_raw.getvalue(), "lxml", parse_only=only_a_tags)
                         if root is not None:
                             for l in root:
-                                lrec = {'warc_id' : item['warc_id'], 'source' : filename, 'url' : item['url'], '_text' : l.text}
+                                lrec = {'warc_id' : item['warc_id'], 'wf_id' : wf_id, 'wf_filename' : filename, 'url' : item['url'], '_text' : l.text}
                                 for att in DEFAULT_LINK_ATTRS:
                                     if att in l.attrs.keys(): 
                                         lrec[att] = l.attrs[att]
@@ -283,7 +285,7 @@ class Indexer:
 
             if len(list_items) > 0:
                 dump_table(filename=table_filename, table=list_items, con=con)
-                list_tables.append({'warcfile' : filename, 'path' :table_filename, 'type' : table_type, 'num_items' : len(list_items)})
+                list_tables.append({'wf_id' : wf_id, 'wf_filename' : filename, 'path' :table_filename, 'type' : table_type, 'num_items' : len(list_items)})
                 if not silent:
                     print(f'- saved {table_filename} with {table_type}')
 
@@ -302,7 +304,7 @@ class Indexer:
 
         list_tables = []
 
-        if fromfiles  is None:
+        if fromfiles is None:
             files = [item['filename'] for item in con.sql('select filename from files;').df().to_dict('records')]
         else:
             files = fromfiles
@@ -366,5 +368,5 @@ class Indexer:
 
 if __name__ == "__main__":
     indexer = Indexer()
-    indexer.index_records(sys.argv[1], tables=['records', 'headers', 'links', 'ooxmldocs', 'oledocs', 'pdfs', 'images'])
+    indexer.index_records(sys.argv[1])
 
