@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "metawarc"
 dynamic = ["version"]
 description = "Command-line tool for metadata extraction from WARC (Web ARChive) files"
-readme = "README.rst"
+readme = "README.md"
 license = {text = "MIT"}
 authors = [{name = "Ivan Begtin", email = "ivan@begtin.tech"}]
 requires-python = ">=3.9"
