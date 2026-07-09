@@ -20,7 +20,7 @@ Main features
 * Metadata extraction for a lot of file formats
 * Low memory footprint
 * Documentation
-* Test coverage
+* Automated test suite
 
 
 File formats supported
@@ -58,7 +58,7 @@ and always provides the latest version) is to use pip:
 Python version
 --------------
 
-Python version 3.6 or greater is required.
+Python version 3.9 or greater is required.
 
 Usage
 =====
@@ -142,7 +142,7 @@ Collects all links for selected WARC file (should be listed in 'warcindex.db' af
 
 .. code-block:: bash
 
-    $ metawarc index-content -i armstat.am.warc.gz -t links
+    $ metawarc index-content sample.warc.gz -t links
 
 
 
@@ -150,13 +150,13 @@ Stats command
 -------------
 Returns total length and count of records by each mime or file extension.
 
-Processes data in 'metawarc.db' and prints total length and count for each mime
+Processes data in 'warcindex.db' and prints total length and count for each mime
 
 .. code-block:: bash
 
     $ metawarc stats -m mimes
 
-Processes data in 'metawarc.db' and prints total length and count for each file extension
+Processes data in 'warcindex.db' and prints total length and count for each file extension
 
 .. code-block:: bash
 
@@ -176,7 +176,7 @@ Exports PDF files metadata and writes as 'pdfs_metadata.jsonl'
 
 List files command
 ------------------
-Prints list of records with id, offset, length and url using 'metawarc.db'. Accepts list of mime types or list of file extensions or query as WHERE clause
+Prints list of records with id, offset, length and url using 'warcindex.db'. Accepts list of mime types or list of file extensions or query as WHERE clause
 
 Prints all records with mime type (content type) 'application/zip'
 
@@ -199,7 +199,7 @@ Prints all records with size greater than 10M and file extension 'pdf'
 
 Dump command
 ------------
-Dumps records payloads as files using 'metawarc.db' as WARC index. Accepts list of mime types or list of file extensions or query as WHERE clause.
+Dumps records payloads as files using 'warcindex.db' as WARC index. Accepts list of mime types or list of file extensions or query as WHERE clause.
 Adds CSV file 'records.csv' to the output directory with basic data about each dumped record.
 
 Dumps all records with mime type (content type) 'application/zip' to 'allzip' directory
@@ -219,4 +219,37 @@ Dumps all records with size greater than 10M and file extension 'pdf' to 'bigpdf
 .. code-block:: bash
 
     $ metawarc dump -q "content_length > 10000000 and ext = 'pdf'" -o bigpdf
+
+
+Serve command
+-------------
+Starts the Metawarc REST API server. The API exposes indexed WARC metadata and record payloads.
+Default port is 8000 (override with ``--port`` or ``METAWARC_PORT``).
+
+.. code-block:: bash
+
+    $ metawarc serve --dbfile warcindex.db
+
+Open ``http://localhost:8000/`` for ReDoc API documentation.
+
+
+MCP command
+-----------
+Starts an MCP server that wraps the REST API for agent integrations.
+Default port is 8191 (override with ``--port`` or ``METAWARC_MCP_PORT``).
+
+.. code-block:: bash
+
+    $ metawarc mcp --dbfile warcindex.db
+
+
+Development
+===========
+
+Install in editable mode with dev dependencies and run tests:
+
+.. code-block:: bash
+
+    $ pip install -e ".[dev]"
+    $ pytest
 

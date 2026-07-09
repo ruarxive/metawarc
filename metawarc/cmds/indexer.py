@@ -89,20 +89,20 @@ class Indexer:
             logging.debug("Indexing %s" % fromfile)
             resp = open(fromfile, "rb")  
             file_basename = os.path.basename(fromfile).lower()
-            if file_basename[-5:] == '.warc': 
-                file_basename - file_basename[0:-5]
-            elif file_basename[-8:] == '.warc.gz': 
+            if file_basename[-5:] == '.warc':
+                file_basename = file_basename[0:-5]
+            elif file_basename[-8:] == '.warc.gz':
                 file_basename = file_basename[0:-8]
 
             table_filename = 'data/' + file_record['id'] + f'_records.parquet'
             if os.path.exists(table_filename):
                 if not rescan:
                     if not silent:
-                        print('Fole {table_filename} already exists and rescan option not set. Skipping')
+                        print(f'File {table_filename} already exists and rescan option not set. Skipping')
                         continue
                 else:
                     if not silent:
-                        print('Fole {table_filename} already exists but rescan option set. Processing')                
+                        print(f'File {table_filename} already exists but rescan option set. Processing')                
 
             iterator = ArchiveIterator(resp)
                             
@@ -120,15 +120,11 @@ class Indexer:
             list_headers = []
 
             it = iterator if silent else tqdm.tqdm(iterator, desc='Iterate records', total=records_num*2)
+            arc_iter = iterator
             for record in it:
                 if record.rec_type != "response": continue
 
                 n += 1      
-#                if not silent:
-#                    if records_> 0:
-#                        if n % THRESHOLD == 0: print('Processed %d (%0.2f%%) records' % (n, n*100.0 / records_num))            
-#                    else:
-#                        if n % THRESHOLD == 0: print('Processed %d records' % (n))
                 if record.http_headers is not None:
                     dbrec = {}
                     dbrec['warc_id'] = record.rec_headers["WARC-Record-ID"].rsplit(':', 1)[-1].strip('>')
@@ -149,8 +145,8 @@ class Indexer:
 
                     dbrec['c_type'] = content_type_no_ch
                     dbrec['c_type_charset'] = charset
-                    dbrec['offset'] = it.iterable.get_record_offset()
-                    dbrec['length'] = it.iterable.get_record_length()
+                    dbrec['offset'] = arc_iter.get_record_offset()
+                    dbrec['length'] = arc_iter.get_record_length()
                     warc_date  = record.rec_headers["WARC-Date"]
                     dbrec['rec_date'] = datetime.strptime(warc_date, "%Y-%m-%dT%H:%M:%S%z")
                     dbrec['content_length'] = int(record.rec_headers["Content-Length"])
@@ -231,9 +227,9 @@ class Indexer:
                         print(f'Records file for {filename} not found')
                     continue
             file_basename = os.path.basename(filename).lower()
-            if file_basename[-5:] == '.warc': 
-                file_basename - file_basename[0:-5]
-            elif file_basename[-8:] == '.warc.gz': 
+            if file_basename[-5:] == '.warc':
+                file_basename = file_basename[0:-5]
+            elif file_basename[-8:] == '.warc.gz':
                 file_basename = file_basename[0:-8]
             list_items = []            
 
@@ -241,11 +237,11 @@ class Indexer:
             if os.path.exists(table_filename):
                 if not rescan:
                     if not silent:
-                        print('File {table_filename} already exists and rescan option not set. Skipping')
+                        print(f'File {table_filename} already exists and rescan option not set. Skipping')
                         continue
                 else:
                     if not silent:
-                        print('File {table_filename} already exists but rescan option set. Processing')
+                        print(f'File {table_filename} already exists but rescan option set. Processing')
 
             warcf = open(filename, "rb")  
             content_types = ','.join(["'" + sub + "'" for sub in mimetypes])
@@ -305,18 +301,25 @@ class Indexer:
         list_tables = []
 
         if fromfiles is None:
-            files = [item['filename'] for item in con.sql('select filename from files;').df().to_dict('records')]
+            file_rows = con.sql('select id, filename from files;').df().to_dict('records')
         else:
-            files = fromfiles
+            file_rows = []
+            for path in fromfiles:
+                row = con.sql(f"select id, filename from files where fullpath = '{path}';").fetchone()
+                if row:
+                    file_rows.append({'id': row[0], 'filename': row[1]})
 
-        for filename in files:
-            mtables = con.sql(f"select * from tables where type = '{metadata_type}' and warcfile = \'{filename}\';").df().to_dict('records')
+        for file_row in file_rows:
+            wf_id = file_row['id']
+            filename = file_row['filename']
+            mtables = con.sql(
+                f"select * from tables where type = '{metadata_type}' and wf_id = '{wf_id}';"
+            ).df().to_dict('records')
             if len(mtables) == 0:
                 if not silent:
                     print(f'Metadata table for {filename} with metadata {metadata_type} not found. Please reindex WARC file')
                 continue
-            else:
-                mfilepath = mtables[0]['path']
+            mfilepath = mtables[0]['path']
 
             if output is None:
                 query = f"select * from '{mfilepath}'"
@@ -358,11 +361,11 @@ class Indexer:
         for key in headers[1:-1]:
             reptable.add_column(key, justify="left", style="cyan", no_wrap=True)
         reptable.add_column(headers[-1], justify="right", style="cyan")
-        total_size = 0
-        for row in results.fetchall():
-            total_size += row[1]
-        for row in results.fetchall():
-            result = [row[0], row[1], '%0.2f%%' % (row[1] *100.0 / total_size), row[2]]
+        rows = results.fetchall()
+        total_size = sum(row[1] for row in rows)
+        for row in rows:
+            share = '%0.2f%%' % (row[1] * 100.0 / total_size) if total_size else '0.00%'
+            result = [row[0], row[1], share, row[2]]
             reptable.add_row(*map(str, result))
         print(reptable)
 

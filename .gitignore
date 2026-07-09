@@ -127,3 +127,12 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Metawarc artifacts
+warcindex.db
+data/
+*.warc
+*.warc.gz
+
+# IDE
+.idea/

@@ -3,6 +3,17 @@
 History
 =======
 
+1.3.0 (2026-07-09)
+------------------
+* Fixed schema mismatches (``warcfile`` vs ``wf_id``/``wf_filename``) in dump and metadata export
+* Fixed ``calc_stats`` empty output, CLI error messages, and indexer typos
+* Added REST API and MCP server with proper HTTP errors and configurable DB path
+* Consolidated CLI into a single command group; added ``--dbfile`` to list/dump/serve/mcp
+* Added ``pyproject.toml``, complete dependency list, test suite, and GitHub Actions CI
+* Fixed silent-mode indexing with current warcio (record offset/length)
+* Removed unused legacy modules (SQLAlchemy models, analyzer, standalone MCP stub)
+* Updated documentation for ``warcindex.db`` and server usage
+
 1.2.0 (2022-07-26)
 ------------------
 * Completely rewritten with DuckDB and parquet files to store metadata and pre-indexing WARC records

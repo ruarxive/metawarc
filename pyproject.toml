@@ -1,0 +1,84 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "metawarc"
+dynamic = ["version"]
+description = "Command-line tool for metadata extraction from WARC (Web ARChive) files"
+readme = "README.rst"
+license = {text = "MIT"}
+authors = [{name = "Ivan Begtin", email = "ivan@begtin.tech"}]
+requires-python = ">=3.9"
+keywords = ["warc", "archive", "webarchive", "metadata"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Text Processing",
+    "Topic :: Utilities",
+]
+dependencies = [
+    "warcio",
+    "fastwarc",
+    "pdfminer.six",
+    "click>=8",
+    "rich",
+    "lxml",
+    "hachoir",
+    "duckdb",
+    "pyarrow",
+    "numpy",
+    "pytz",
+    "beautifulsoup4",
+    "tqdm",
+    "fastapi",
+    "uvicorn[standard]",
+    "fastmcp",
+    "structlog",
+    "pydantic",
+    "python-dotenv",
+    "jinja2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7",
+    "pytest-cov",
+    "httpx",
+    "flake8",
+]
+
+[project.urls]
+Homepage = "https://github.com/ruarxive/metawarc"
+Repository = "https://github.com/ruarxive/metawarc"
+Issues = "https://github.com/ruarxive/metawarc/issues"
+
+[project.scripts]
+metawarc = "metawarc.__main__:main"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+exclude = ["tests", "tests.*"]
+
+[tool.setuptools.package-data]
+metawarc = ["templates/*.html"]
+
+[tool.setuptools.dynamic]
+version = {attr = "metawarc.__version__"}
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v"
+
+[tool.coverage.run]
+source = ["metawarc"]

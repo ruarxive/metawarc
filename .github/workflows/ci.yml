@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [master, testing, v2]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Lint
+        run: flake8 metawarc/core.py metawarc/dbutil.py metawarc/settings.py metawarc/logs.py metawarc/routers metawarc/cmds/server.py metawarc/cmds/dump.py tests --max-line-length=120 --extend-ignore=E501,W503
+
+      - name: Test
+        run: pytest --cov=metawarc --cov-report=term-missing
