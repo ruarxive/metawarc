@@ -1,12 +1,11 @@
-warcio
-pdfminer
-click
-lxml
-hachoir
-tabulate
-pytest
-rich
-pyarrow
-duckdb
-bs4
-tqdm
+# Compatibility input for environments that do not install the project directly.
+# pyproject.toml is authoritative.
+click>=8.1
+duckdb>=1.0
+fonttools[woff]>=4.53
+hachoir>=3.2
+lxml>=5.0
+pdfminer.six>=20231228
+pyarrow>=16
+rich>=13
+warcio>=1.7

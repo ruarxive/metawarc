@@ -1,19 +1,6 @@
-#!/usr/bin/env python
-"""The main entry point. Invoke as `metawarc' or `python -m metawarc`.
+"""Run Metawarc with ``python -m metawarc``."""
 
-"""
-import sys
-
-
-def main():
-    try:
-        from .core import cli
-
-        exit_status = cli()
-    except KeyboardInterrupt:
-        print("Ctrl-C pressed. Aborting")
-    sys.exit(0)
-
+from .core import cli
 
 if __name__ == "__main__":
-    main()
+    cli(prog_name="metawarc")

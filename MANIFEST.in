@@ -1,0 +1,3 @@
+prune metawarc/base
+prune metawarc/data
+global-exclude __pycache__ *.py[cod]

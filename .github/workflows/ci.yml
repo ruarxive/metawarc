@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        python: ["3.10", "3.13"]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e '.[all,dev]'
+      - run: ruff format --check .
+      - run: ruff check .
+      - run: mypy metawarc
+      - run: pytest --cov=metawarc --cov-report=term-missing --cov-fail-under=75
+      - run: pytest tests/test_workspace_index.py tests/test_query_export.py --cov=metawarc.cmds.indexer --cov-fail-under=70
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - run: python -m pip install --upgrade pip build pip-audit cyclonedx-bom
+      - run: python -m build
+      - run: pip-audit
+      - run: cyclonedx-py environment --output-file sbom.json
+      - name: Install and smoke-test wheel variants
+        run: |
+          wheel=$(find dist -name 'metawarc-*.whl' -print -quit)
+          for extra in core api mcp all; do
+            python -m venv "smoke-$extra"
+            if [ "$extra" = core ]; then
+              "smoke-$extra/bin/pip" install "$wheel"
+            else
+              "smoke-$extra/bin/pip" install "$wheel[$extra]"
+            fi
+            "smoke-$extra/bin/metawarc" --version
+          done
+          smoke-core/bin/python .github/scripts/installed_smoke.py
+          smoke-api/bin/python -c 'from metawarc.cmds.server import create_app; assert create_app()'
+          smoke-mcp/bin/python -c 'from metawarc.mcp_server import create_mcp; assert create_mcp()'
+          smoke-all/bin/python -c 'from metawarc.cmds.server import create_app; from metawarc.mcp_server import create_mcp; assert create_app() and create_mcp()'
+      - run: python .github/scripts/write_provenance.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: distributions-and-sbom
+          path: |
+            dist/*
+            sbom.json
+            provenance.json
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
