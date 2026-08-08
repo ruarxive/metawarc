@@ -1,5 +1,6 @@
 # Compatibility input for environments that do not install the project directly.
 # pyproject.toml is authoritative.
+beautifulsoup4>=4.12
 click>=8.1
 duckdb>=1.0
 fonttools[woff]>=4.53

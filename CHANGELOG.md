@@ -2,6 +2,13 @@
 
 All notable changes to this project are documented in this file.
 
+## 2.0.1 (2026-08-08)
+
+### Fixed
+
+- Declare `beautifulsoup4` as a core dependency so `metawarc` imports cleanly
+  from a fresh PyPI install.
+
 ## 2.0.0 (2026-08-08)
 
 ### Added

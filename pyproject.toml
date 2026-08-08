@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "metawarc"
-version = "2.0.0"
+version = "2.0.1"
 description = "Bounded, versioned indexing, extraction, and analysis for WARC collections"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -24,6 +24,7 @@ classifiers = [
   "Topic :: System :: Archiving",
 ]
 dependencies = [
+  "beautifulsoup4>=4.12",
   "click>=8.1",
   "duckdb>=1.0",
   "fonttools[woff]>=4.53",
