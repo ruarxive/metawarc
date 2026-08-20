@@ -1,3 +1,7 @@
+---
+title: "Release checklist"
+description: "Steps required before tagging a metawarc release"
+---
 # Release checklist
 
 1. Confirm every shipped behavior has approved OpenSpec tasks and tests.
@@ -9,3 +13,6 @@
 7. Review generated artifacts for workspace data, credentials, caches, and unrelated files.
 8. Merge through review, tag the release as `vMAJOR.MINOR.PATCH`, sign the tag, and publish artifacts.
 9. Verify the published artifact records the intended source commit and repeat smoke tests.
+
+Release tags, version metadata, changelog, documentation, and artifacts must
+originate from the same commit.

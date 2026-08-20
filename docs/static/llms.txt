@@ -1,0 +1,37 @@
+# CLI Reference
+
+metawarc commands grouped the same way as the documentation sidebar.
+
+## Getting started
+
+- [Installation](https://datacoon.github.io/metawarc/getting-started/installation)
+- [Quick start](https://datacoon.github.io/metawarc/getting-started/quick-start)
+- [When to use](https://datacoon.github.io/metawarc/getting-started/when-to-use)
+- [Cookbook](https://datacoon.github.io/metawarc/getting-started/cookbook)
+- [Performance](https://datacoon.github.io/metawarc/getting-started/performance)
+- [Troubleshooting](https://datacoon.github.io/metawarc/getting-started/troubleshooting)
+
+## Commands
+
+- [Command index](https://datacoon.github.io/metawarc/commands/)
+- [index](https://datacoon.github.io/metawarc/commands/index-records)
+- [ingest](https://datacoon.github.io/metawarc/commands/ingest)
+- [index-content](https://datacoon.github.io/metawarc/commands/index-content)
+- [catalog](https://datacoon.github.io/metawarc/commands/catalog)
+- [list-files](https://datacoon.github.io/metawarc/commands/list-files)
+- [dump](https://datacoon.github.io/metawarc/commands/dump)
+- [analyze](https://datacoon.github.io/metawarc/commands/analyze)
+- [serve](https://datacoon.github.io/metawarc/commands/serve)
+- [mcp](https://datacoon.github.io/metawarc/commands/mcp)
+
+## Integrations
+
+- [REST API](https://datacoon.github.io/metawarc/integrations/rest-api)
+- [Website replay](https://datacoon.github.io/metawarc/integrations/replay)
+- [MCP server](https://datacoon.github.io/metawarc/integrations/mcp)
+
+## Architecture
+
+- [Workspace and schema](https://datacoon.github.io/metawarc/architecture/workspace)
+- [Query model](https://datacoon.github.io/metawarc/architecture/query)
+- [Security](https://datacoon.github.io/metawarc/architecture/security)

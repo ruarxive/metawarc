@@ -10,6 +10,23 @@ buffers with stable archive IDs, explicit workspace metadata, batched writes,
 atomic publication, and typed queries shared by the CLI, REST API, and MCP
 server.
 
+## Documentation
+
+The full documentation site (Docusaurus) lives in [`docs/`](docs/) and is
+published at **[datacoon.github.io/metawarc](https://datacoon.github.io/metawarc/)**.
+
+| Section | What it covers |
+|---------|----------------|
+| [Getting started](https://datacoon.github.io/metawarc/getting-started/installation) | Install, quick start, positioning |
+| [Cookbook](https://datacoon.github.io/metawarc/getting-started/cookbook) | Task index by role |
+| [CLI reference](https://datacoon.github.io/metawarc/commands/) | Every command |
+| [Architecture](https://datacoon.github.io/metawarc/architecture/workspace) | Workspace schema, query model, security |
+| [REST / replay / MCP](https://datacoon.github.io/metawarc/integrations/rest-api) | Optional interfaces |
+| [Troubleshooting](https://datacoon.github.io/metawarc/getting-started/troubleshooting) | Diagnostics and common errors |
+
+Source pages: [`docs/docs/`](docs/docs/). Changelog: [`CHANGELOG.md`](CHANGELOG.md).
+Contributor workflow: [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
 ## Install
 
 Python 3.10 or newer is required.
@@ -135,9 +152,10 @@ acknowledgement. The MCP surface is read-only and contains no raw SQL,
 filesystem-path, payload, or mutation tool. Non-loopback MCP transport requires
 explicit acknowledgement.
 
-See [architecture](docs/architecture.md), [CLI reference](docs/cli.md),
-[security](SECURITY.md), [changelog](CHANGELOG.md), and the
-[release checklist](docs/release-checklist.md) for operational detail.
+See the [documentation site](https://datacoon.github.io/metawarc/) for
+architecture, CLI reference, replay, and release guidance. Repository copies:
+[security](SECURITY.md), [changelog](CHANGELOG.md), and
+[contributing](CONTRIBUTING.md).
 
 ## Compatibility
 

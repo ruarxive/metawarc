@@ -59,7 +59,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/datacoon/metawarc"
-Documentation = "https://github.com/datacoon/metawarc#readme"
+Documentation = "https://datacoon.github.io/metawarc/"
 Issues = "https://github.com/datacoon/metawarc/issues"
 Repository = "https://github.com/datacoon/metawarc.git"
 
