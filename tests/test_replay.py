@@ -130,9 +130,7 @@ def test_redirect_hop_limit(tmp_path: Path, warc_factory):
         start = service.find_capture("https://example.test/a", "20200101000000")
         with pytest.raises(ReplayError, match="hop limit"):
             service.follow_redirects(start, "20200101000000", max_hops=1)
-        final = ReplayService(workspace, redirect_hops=5).follow_redirects(
-            start, "20200101000000"
-        )
+        final = ReplayService(workspace, redirect_hops=5).follow_redirects(start, "20200101000000")
         assert final["warc_id"] == "urn:uuid:r3"
 
 

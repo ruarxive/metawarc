@@ -1007,8 +1007,7 @@ def replay_command(
 ) -> None:
     """Alias for serve; website replay is available under /replay/<stamp>/<url>."""
     click.echo(
-        "Starting metawarc serve with website replay at "
-        "/replay/<YYYYMMDDHHMMSS[mp_|id_]>/<url>",
+        "Starting metawarc serve with website replay at /replay/<YYYYMMDDHHMMSS[mp_|id_]>/<url>",
         err=True,
     )
     _run_serve(
