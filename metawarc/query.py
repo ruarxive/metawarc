@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from .errors import QueryValidationError, WorkspaceError
@@ -75,8 +75,8 @@ def _coerce_timestamp(value: datetime | str) -> datetime:
     """Normalize a capture timestamp to timezone-aware UTC."""
     if isinstance(value, datetime):
         if value.tzinfo is None:
-            return value.replace(tzinfo=UTC)
-        return value.astimezone(UTC)
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
     text = value.strip()
     if not text:
         raise QueryValidationError("timestamp must not be empty")
@@ -92,8 +92,8 @@ def _coerce_timestamp(value: datetime | str) -> datetime:
             "timestamp must be YYYYMMDDHHMMSS or an ISO-8601 datetime"
         ) from exc
     if parsed.tzinfo is None:
-        return parsed.replace(tzinfo=UTC)
-    return parsed.astimezone(UTC)
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
 
 
 @dataclass(frozen=True)

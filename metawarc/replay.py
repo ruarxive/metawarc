@@ -6,7 +6,7 @@ import json
 import re
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from html import escape
 from pathlib import Path
 from typing import Any, Literal
@@ -76,7 +76,7 @@ class ReplayStamp:
 
     @property
     def wayback(self) -> str:
-        return self.timestamp.astimezone(UTC).strftime("%Y%m%d%H%M%S")
+        return self.timestamp.astimezone(timezone.utc).strftime("%Y%m%d%H%M%S")
 
     @property
     def token(self) -> str:
@@ -90,18 +90,25 @@ def parse_replay_stamp(value: str) -> ReplayStamp:
         raise QueryValidationError(
             "replay stamp must be YYYYMMDDHHMMSS with optional id_ or mp_ suffix"
         )
-    mode = match.group("mod") or ""
+    raw_mode = match.group("mod") or ""
+    mode: ReplayMode
+    if raw_mode == "id_":
+        mode = "id_"
+    elif raw_mode == "mp_":
+        mode = "mp_"
+    else:
+        mode = ""
     return ReplayStamp(timestamp=_coerce_timestamp(match.group("ts")), mode=mode, raw=value)
 
 
 def format_memento_datetime(value: datetime | str) -> str:
     stamp = value if isinstance(value, datetime) else _coerce_timestamp(value)
-    return stamp.astimezone(UTC).strftime("%a, %d %b %Y %H:%M:%S GMT")
+    return stamp.astimezone(timezone.utc).strftime("%a, %d %b %Y %H:%M:%S GMT")
 
 
 def wayback_timestamp(value: datetime | str) -> str:
     stamp = value if isinstance(value, datetime) else _coerce_timestamp(value)
-    return stamp.astimezone(UTC).strftime("%Y%m%d%H%M%S")
+    return stamp.astimezone(timezone.utc).strftime("%Y%m%d%H%M%S")
 
 
 def surt_key(url: str) -> str:
@@ -671,8 +678,8 @@ def export_cdxj(
         path_index_path = Path(path_index)
         path_index_path.parent.mkdir(parents=True, exist_ok=True)
         with path_index_path.open("w", encoding="utf-8") as handle:
-            for filename, source in sorted(sources.items()):
-                handle.write(f"{filename}\t{source}\n")
+            for filename, source_path in sorted(sources.items()):
+                handle.write(f"{filename}\t{source_path}\n")
         path_index_written = str(path_index_path)
 
     return {
