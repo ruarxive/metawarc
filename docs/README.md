@@ -70,7 +70,7 @@ docs/
 ## Deployment
 
 The documentation is deployed to GitHub Pages at
-[datacoon.github.io/metawarc](https://datacoon.github.io/metawarc/) when changes
+[ruarxive.org/metawarc](https://ruarxive.org/metawarc/) when changes
 are pushed to `master` or `main`. The workflow lives in
 `.github/workflows/deploy-docs.yml`.
 

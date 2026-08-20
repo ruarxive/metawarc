@@ -58,10 +58,10 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/datacoon/metawarc"
-Documentation = "https://datacoon.github.io/metawarc/"
-Issues = "https://github.com/datacoon/metawarc/issues"
-Repository = "https://github.com/datacoon/metawarc.git"
+Homepage = "https://github.com/ruarxive/metawarc"
+Documentation = "https://ruarxive.org/metawarc/"
+Issues = "https://github.com/ruarxive/metawarc/issues"
+Repository = "https://github.com/ruarxive/metawarc.git"
 
 [project.scripts]
 metawarc = "metawarc.core:cli"

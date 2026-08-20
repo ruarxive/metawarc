@@ -13,16 +13,16 @@ server.
 ## Documentation
 
 The full documentation site (Docusaurus) lives in [`docs/`](docs/) and is
-published at **[datacoon.github.io/metawarc](https://datacoon.github.io/metawarc/)**.
+published at **[ruarxive.org/metawarc](https://ruarxive.org/metawarc/)**.
 
 | Section | What it covers |
 |---------|----------------|
-| [Getting started](https://datacoon.github.io/metawarc/getting-started/installation) | Install, quick start, positioning |
-| [Cookbook](https://datacoon.github.io/metawarc/getting-started/cookbook) | Task index by role |
-| [CLI reference](https://datacoon.github.io/metawarc/commands/) | Every command |
-| [Architecture](https://datacoon.github.io/metawarc/architecture/workspace) | Workspace schema, query model, security |
-| [REST / replay / MCP](https://datacoon.github.io/metawarc/integrations/rest-api) | Optional interfaces |
-| [Troubleshooting](https://datacoon.github.io/metawarc/getting-started/troubleshooting) | Diagnostics and common errors |
+| [Getting started](https://ruarxive.org/metawarc/getting-started/installation) | Install, quick start, positioning |
+| [Cookbook](https://ruarxive.org/metawarc/getting-started/cookbook) | Task index by role |
+| [CLI reference](https://ruarxive.org/metawarc/commands/) | Every command |
+| [Architecture](https://ruarxive.org/metawarc/architecture/workspace) | Workspace schema, query model, security |
+| [REST / replay / MCP](https://ruarxive.org/metawarc/integrations/rest-api) | Optional interfaces |
+| [Troubleshooting](https://ruarxive.org/metawarc/getting-started/troubleshooting) | Diagnostics and common errors |
 
 Source pages: [`docs/docs/`](docs/docs/). Changelog: [`CHANGELOG.md`](CHANGELOG.md).
 Contributor workflow: [`CONTRIBUTING.md`](CONTRIBUTING.md).
@@ -152,7 +152,7 @@ acknowledgement. The MCP surface is read-only and contains no raw SQL,
 filesystem-path, payload, or mutation tool. Non-loopback MCP transport requires
 explicit acknowledgement.
 
-See the [documentation site](https://datacoon.github.io/metawarc/) for
+See the [documentation site](https://ruarxive.org/metawarc/) for
 architecture, CLI reference, replay, and release guidance. Repository copies:
 [security](SECURITY.md), [changelog](CHANGELOG.md), and
 [contributing](CONTRIBUTING.md).
@@ -165,7 +165,7 @@ architecture, CLI reference, replay, and release guidance. Repository copies:
 - If a legacy layout cannot be migrated unambiguously, `doctor` reports rebuild
   guidance instead of rewriting source archives.
 
-The canonical repository is <https://github.com/datacoon/metawarc>; `master` is
+The canonical repository is <https://github.com/ruarxive/metawarc>; `master` is
 the release branch and feature work is integrated through reviewed pull
 requests. Releases use signed `vMAJOR.MINOR.PATCH` tags.
 

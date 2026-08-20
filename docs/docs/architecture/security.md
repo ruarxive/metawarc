@@ -5,8 +5,8 @@ description: "Threat model, loopback defaults, and export safety"
 # Security
 
 Report vulnerabilities privately through GitHub Security Advisories for
-`datacoon/metawarc`. Do not include credentials or private archive contents in
-an issue. See also [`SECURITY.md`](https://github.com/datacoon/metawarc/blob/master/SECURITY.md)
+`ruarxive/metawarc`. Do not include credentials or private archive contents in
+an issue. See also [`SECURITY.md`](https://github.com/ruarxive/metawarc/blob/master/SECURITY.md)
 in the repository.
 
 ## Threat model

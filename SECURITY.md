@@ -1,7 +1,7 @@
 # Security policy
 
 Report vulnerabilities privately through GitHub Security Advisories for
-`datacoon/metawarc`. Do not include credentials or private archive contents in
+`ruarxive/metawarc`. Do not include credentials or private archive contents in
 an issue.
 
 Metawarc processes attacker-controlled archive metadata and payloads. Run it

@@ -5,7 +5,7 @@ description: "MIT license for metawarc"
 # License
 
 metawarc is released under the MIT License. See the
-[LICENSE](https://github.com/datacoon/metawarc/blob/master/LICENSE) file in the repository.
+[LICENSE](https://github.com/ruarxive/metawarc/blob/master/LICENSE) file in the repository.
 
 ```
 MIT License

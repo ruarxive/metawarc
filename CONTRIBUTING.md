@@ -17,7 +17,7 @@ python -m build
 Documentation lives in the Docusaurus site under `docs/`. Edit pages in
 `docs/docs/`, then from `docs/` run `npm install`, `npm start` to preview, and
 `npm run build` to confirm links. See [docs/README.md](docs/README.md) and the
-[contributing guide](https://datacoon.github.io/metawarc/development/contributing).
+[contributing guide](https://ruarxive.org/metawarc/development/contributing).
 
 Behavior changes require an OpenSpec change under `openspec/changes/`.
 Implementation tasks may be checked only after code, tests, and documentation

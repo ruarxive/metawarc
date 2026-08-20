@@ -4,14 +4,14 @@ description: "Repository, issues, security reports, and related projects"
 ---
 # Community
 
-metawarc is maintained as part of the datacoon / APICrafter open-source toolkit.
+metawarc is maintained under the [ruarxive](https://github.com/ruarxive) web-archive toolkit.
 
 ## Repository
 
-- Canonical repository: [github.com/datacoon/metawarc](https://github.com/datacoon/metawarc)
-- Issues: [github.com/datacoon/metawarc/issues](https://github.com/datacoon/metawarc/issues)
+- Canonical repository: [github.com/ruarxive/metawarc](https://github.com/ruarxive/metawarc)
+- Issues: [github.com/ruarxive/metawarc/issues](https://github.com/ruarxive/metawarc/issues)
 - PyPI: [pypi.org/project/metawarc](https://pypi.org/project/metawarc/)
-- Changelog: [CHANGELOG.md](https://github.com/datacoon/metawarc/blob/master/CHANGELOG.md)
+- Changelog: [CHANGELOG.md](https://github.com/ruarxive/metawarc/blob/master/CHANGELOG.md)
 
 `master` is the release branch. Feature work is integrated through reviewed pull
 requests.
@@ -19,7 +19,7 @@ requests.
 ## Security
 
 Report vulnerabilities privately through GitHub Security Advisories for
-`datacoon/metawarc`. Do not include credentials or private archive contents in
+`ruarxive/metawarc`. Do not include credentials or private archive contents in
 a public issue. See [security](/architecture/security).
 
 ## Related tools

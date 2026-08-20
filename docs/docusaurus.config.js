@@ -10,10 +10,10 @@ const config = {
   tagline: 'Bounded indexing, extraction, and analysis for WARC collections',
   favicon: 'img/favicon.svg',
 
-  url: 'https://datacoon.github.io',
+  url: 'https://ruarxive.org',
   baseUrl: '/metawarc/',
 
-  organizationName: 'datacoon',
+  organizationName: 'ruarxive',
   projectName: 'metawarc',
   deploymentBranch: 'gh-pages',
   trailingSlash: false,
@@ -37,7 +37,7 @@ const config = {
       ({
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          editUrl: 'https://github.com/datacoon/metawarc/edit/master/docs/docs/',
+          editUrl: 'https://github.com/ruarxive/metawarc/edit/master/docs/docs/',
           routeBasePath: '/',
         },
         blog: false,
@@ -77,12 +77,12 @@ const config = {
             position: 'left',
           },
           {
-            href: 'https://datacoon.github.io/metawarc/llms.txt',
+            href: 'https://ruarxive.org/metawarc/llms.txt',
             label: 'llms.txt',
             position: 'right',
           },
           {
-            href: 'https://github.com/datacoon/metawarc',
+            href: 'https://github.com/ruarxive/metawarc',
             label: 'GitHub',
             position: 'right',
           },
@@ -121,7 +121,7 @@ const config = {
             items: [
               {
                 label: 'llms.txt',
-                href: 'https://datacoon.github.io/metawarc/llms.txt',
+                href: 'https://ruarxive.org/metawarc/llms.txt',
               },
               {
                 label: 'MCP server',
@@ -142,7 +142,7 @@ const config = {
             items: [
               {
                 label: 'GitHub',
-                href: 'https://github.com/datacoon/metawarc',
+                href: 'https://github.com/ruarxive/metawarc',
               },
               {
                 label: 'PyPI',
@@ -150,7 +150,7 @@ const config = {
               },
               {
                 label: 'Changelog',
-                href: 'https://github.com/datacoon/metawarc/blob/master/CHANGELOG.md',
+                href: 'https://github.com/ruarxive/metawarc/blob/master/CHANGELOG.md',
               },
               {
                 label: 'License',

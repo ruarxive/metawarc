@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://datacoon.github.io/metawarc/
+Sitemap: https://ruarxive.org/metawarc/

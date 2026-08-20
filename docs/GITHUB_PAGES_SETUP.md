@@ -1,11 +1,11 @@
 # GitHub Pages deployment setup
 
 This document describes how metawarc documentation is deployed to GitHub Pages at
-`https://datacoon.github.io/metawarc/`.
+`https://ruarxive.org/metawarc/`.
 
 ## Prerequisites
 
-1. The repository `datacoon/metawarc`
+1. The repository `ruarxive/metawarc`
 2. GitHub Pages enabled in repository settings with **GitHub Actions** as the source
 
 ## Configuration
@@ -13,12 +13,13 @@ This document describes how metawarc documentation is deployed to GitHub Pages a
 The documentation is configured in `docs/docusaurus.config.js` for project-site
 deployment from this repository:
 
-- **URL**: `https://datacoon.github.io`
+- **URL**: `https://ruarxive.org`
 - **Base URL**: `/metawarc/`
-- **Organization**: `datacoon`
+- **Organization**: `ruarxive`
 - **Project**: `metawarc`
 
-The published site is available at `https://datacoon.github.io/metawarc/`.
+The published site is available at `https://ruarxive.org/metawarc/`. GitHub Pages
+also redirects `https://ruarxive.github.io/metawarc/` to that custom domain.
 
 ## Setup steps
 
@@ -38,7 +39,7 @@ The published site is available at `https://datacoon.github.io/metawarc/`.
 
 3. **Verify deployment**:
    - After the workflow completes, the site is available at
-     `https://datacoon.github.io/metawarc/`
+     `https://ruarxive.org/metawarc/`
    - Deployment typically takes 1–2 minutes
 
 ## Moving to a custom domain or user site
@@ -49,7 +50,7 @@ If the documentation should later live at a root domain, update
 ```javascript
 url: 'https://your-domain.example',
 baseUrl: '/',
-organizationName: 'datacoon',
+organizationName: 'ruarxive',
 projectName: 'metawarc',
 ```
 

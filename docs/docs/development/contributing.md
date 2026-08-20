@@ -19,7 +19,7 @@ local databases, sidecars, credentials, or extracted payloads.
 ### Installation
 
 ```bash
-git clone https://github.com/datacoon/metawarc.git
+git clone https://github.com/ruarxive/metawarc.git
 cd metawarc
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
