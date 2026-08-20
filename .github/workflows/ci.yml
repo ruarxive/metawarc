@@ -55,7 +55,7 @@ jobs:
           smoke-mcp/bin/python -c 'from metawarc.mcp_server import create_mcp; assert create_mcp()'
           smoke-all/bin/python -c 'from metawarc.cmds.server import create_app; from metawarc.mcp_server import create_mcp; assert create_app() and create_mcp()'
       - run: python .github/scripts/write_provenance.py
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: distributions-and-sbom
           path: |
