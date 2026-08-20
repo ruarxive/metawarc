@@ -673,7 +673,7 @@ def export_cdxj(
             )
             count += 1
 
-    path_index_written = None
+    path_index_written: str | None = None
     if path_index is not None:
         path_index_path = Path(path_index)
         path_index_path.parent.mkdir(parents=True, exist_ok=True)

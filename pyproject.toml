@@ -32,6 +32,7 @@ dependencies = [
   "lxml>=5.0",
   "pdfminer.six>=20231228",
   "pyarrow>=16",
+  "pytz>=2024.1",
   "rich>=13",
   "warcio>=1.7",
 ]

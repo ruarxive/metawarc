@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -62,7 +62,7 @@ def test_find_capture_closest_and_exact(tmp_path: Path, warc_factory):
         assert closest["warc_id"] == "urn:uuid:early"
         exact = service.find_capture(
             "https://example.test/page",
-            datetime(2020, 1, 3, tzinfo=UTC),
+            datetime(2020, 1, 3, tzinfo=timezone.utc),
             policy="exact",
         )
         assert exact is not None

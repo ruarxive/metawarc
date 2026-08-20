@@ -190,7 +190,9 @@ def test_mcp_inventory_is_minimal_and_read_only(indexed_workspace):
 
 
 def test_documented_commands_match_click_tree():
-    documentation = (Path(__file__).parents[1] / "docs" / "cli.md").read_text()
+    documentation = (
+        Path(__file__).parents[1] / "docs" / "docs" / "commands" / "index.md"
+    ).read_text()
     for command in cli.commands:
         assert f"`{command}`" in documentation
 
