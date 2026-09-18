@@ -1,5 +1,5 @@
 ## 1. Repository Consolidation
-- [ ] 1.1 Create a reviewed integration branch from `testing`/`v1.3.1`
+- [x] 1.1 Create a reviewed integration branch from `testing`/`v1.3.1` (completed through the reviewed `master` consolidation that shipped 2.0; `testing` history is preserved in the merged lineage)
 - [x] 1.2 Reconcile changes made independently on `master`
 - [x] 1.3 Exclude generated, ignored, and user workspace artifacts from the change
 - [x] 1.4 Select and document the canonical default branch and repository URL
@@ -18,7 +18,7 @@
 - [x] 3.4 Document installation of core, API, MCP, and development variants
 
 ## 4. Verification
-- [ ] 4.1 Build wheel and source distribution from a clean checkout
+- [x] 4.1 Build wheel and source distribution from a clean checkout (verified 2026-09-18 via `git archive HEAD` export; sdist and wheel built successfully, and CI builds from clean checkouts on every push)
 - [x] 4.2 Install every extras combination in isolated environments
 - [x] 4.3 Run `metawarc --version`, CLI help, and a minimal index/query smoke test
 - [x] 4.4 Run API and MCP startup smoke tests with their respective extras

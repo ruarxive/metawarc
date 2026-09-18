@@ -1,51 +1,40 @@
 # OpenSpec Change Roadmap
 
-This roadmap translates `REPOSITORY_REVIEW_AND_IMPROVEMENT_PLAN.md` into
-independently reviewable OpenSpec changes. All entries under `changes/` are
-proposals and must not be implemented until approved.
+All changes from the 2026-08-04 repository review were implemented with the
+2.0 release and archived on 2026-09-18. The archived changes now live under
+`changes/archive/2026-09-18-*` and their requirements are merged into
+`specs/`, which is the current source of truth for the shipped 2.x surface.
 
-## Delivery order
+See `PRODUCT_REVIEW_AND_IMPROVEMENT_PLAN.md` (2026-09-17) for the active
+improvement plan and full traceability.
 
-1. `consolidate-release-baseline`
-2. `establish-quality-gates` and `stabilize-index-workspace`
-3. `harden-metadata-extraction` and `secure-query-export-interfaces`
-4. `add-incremental-ingestion`
-5. `add-collection-analysis`
+## Shipped capabilities (specs)
 
-`establish-quality-gates` can begin alongside repository consolidation, but its
-packaging and migration fixtures depend on the chosen canonical baseline.
-Security and extraction changes depend on the catalog/query boundaries from
-`stabilize-index-workspace`. Incremental ingestion depends on stable identity,
-checkpoints, and atomic workspace writes. Collection analysis depends on stable
-typed queries and versioned metadata.
-
-## Plan traceability
-
-| Review plan area | OpenSpec change |
+| Capability | Delivered by |
 |---|---|
-| R0.1-R0.4; packaging and release alignment | `consolidate-release-baseline` |
-| R1.1-R1.4; R2.1-R2.2; R2.6 | `stabilize-index-workspace` |
-| R1.5-R1.7; R3.1-R3.6 | `secure-query-export-interfaces` |
-| R2.3-R2.5 | `harden-metadata-extraction` |
-| Test, documentation, lint, packaging, and migration gates | `establish-quality-gates` |
-| F4.1, F4.2, F4.5, F4.7 | `add-collection-analysis` |
-| F4.3 and resumable ingestion portions of R1/R2 | `add-incremental-ingestion` |
+| `archive-indexing` | `stabilize-index-workspace`, `add-incremental-ingestion` |
+| `index-workspace` | `stabilize-index-workspace` |
+| `record-query` | `secure-query-export-interfaces` |
+| `payload-export` | `secure-query-export-interfaces` |
+| `metadata-extraction` | `harden-metadata-extraction`, `expand-media-format-extraction` |
+| `collection-analysis` | `add-collection-analysis`, `add-metadata-analysis` |
+| `website-replay` | `add-website-replay` |
+| `remote-interfaces` | `secure-query-export-interfaces`, `add-website-replay` |
+| `cli-progress` | `add-cli-progress-reporting` |
+| `build-system` / `release-engineering` / `test-assurance` / `documentation-quality` | `consolidate-release-baseline`, `establish-quality-gates` |
 
 ## Deferred proposals
 
-The following roadmap ideas remain deliberately unscoped until the typed query
-service and versioned workspace are implemented and measured:
+The following remain deliberately unscoped until they are picked up as their
+own change proposals (see the 2026-09-17 review, Phase 2, for ordering):
 
-- optional extracted-text/full-text search;
-- authenticated durable batch-job API;
-- read-only web exploration interface (F4.10 catalog dashboard; distinct from
-  page replay).
-
-## Proposed next capabilities
-
-- `add-website-replay` — local URL+timestamp page replay on the workspace
-  catalog, with HTML/CSS rewriting and optional CDXJ/pywb interoperability.
-  Does not replace F4.10 exploration UI.
+1. Collection exploration dashboard — read-only web UI over the catalog
+   (hosts, MIME stats, timelines), distinct from page replay.
+2. Full-text search — searchable index of extracted text (PDF/HTML).
+3. Richer read-only MCP surface — collection stats and analysis summary tools,
+   preserving the no-SQL/no-path/no-mutation contract.
+4. Authenticated durable batch-job API — async export/analysis jobs for large
+   collections.
 
 Each deferred item requires its own future OpenSpec change rather than being
 silently included in an earlier implementation.
