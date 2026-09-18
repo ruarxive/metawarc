@@ -2,6 +2,29 @@
 
 All notable changes to this project are documented in this file.
 
+## 2.0.2 (2026-09-18)
+
+### Fixed
+
+- Declare `pytz` as a core dependency so DuckDB can compare timezone-aware
+  record timestamps on a fresh install.
+- Align `requirements.txt` with the authoritative `pyproject.toml` dependency
+  set (adds `pytz` and `fonttools[woff]`).
+
+### Changed
+
+- Remove dead `metawarc.base` and `metawarc.data` packages from the source
+  tree; they were already excluded from built distributions.
+- Pin the `httpx2` development dependency to `>=2.12`; previously resolved
+  2.9.1 carried six known CVEs (PYSEC-2026-3844 through PYSEC-2026-3849).
+  `pip-audit` is clean again.
+- Modernize GitHub Actions (v7), support Python 3.10–3.13 CI matrix, and add
+  a macOS test runner.
+- Publish the Docusaurus documentation site and retarget repository URLs
+  after the move to the `ruarxive` organization.
+- Archive all completed OpenSpec changes; `openspec/specs/` now holds the
+  shipped 2.x capability requirements.
+
 ## 2.0.1 (2026-08-08)
 
 ### Fixed

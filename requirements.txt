@@ -1,5 +1,5 @@
-# Compatibility input for environments that do not install the project directly.
-# pyproject.toml is authoritative.
+# Mirrors [project.dependencies] in pyproject.toml, which is authoritative.
+# Keep in sync when adding or changing runtime dependencies.
 beautifulsoup4>=4.12
 click>=8.1
 duckdb>=1.0
@@ -8,5 +8,6 @@ hachoir>=3.2
 lxml>=5.0
 pdfminer.six>=20231228
 pyarrow>=16
+pytz>=2024.1
 rich>=13
 warcio>=1.7
