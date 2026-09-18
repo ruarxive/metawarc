@@ -99,3 +99,82 @@ def test_get_refuses_existing_output(indexed_workspace, tmp_path: Path):
     with pytest.raises(WorkspaceError):
         Dumper().get_file("urn:uuid:alpha", str(database), output=str(target), silent=True)
     assert target.read_text() == "keep"
+
+
+def test_dump_records_failed_payloads_in_manifest_without_part_files(
+    indexed_workspace, tmp_path: Path
+):
+    database, source = indexed_workspace
+    source.unlink()
+    output = tmp_path / "gone-source"
+    result = Dumper().dump(dbfile=str(database), output=str(output), silent=True, limit=2)
+    assert result["completed"] == 0
+    assert result["failed"] == 2
+    entries = [json.loads(line) for line in Path(result["manifest"]).read_text().splitlines()]
+    assert all(item["status"] == "failed" for item in entries)
+    assert all("source not found" in item["error"] for item in entries)
+    assert not list(output.glob("*.part"))
+
+
+def test_dump_declared_byte_limit_skips_before_writing(indexed_workspace, tmp_path: Path):
+    database, _ = indexed_workspace
+    output = tmp_path / "declared-limit"
+    result = Dumper().dump(
+        dbfile=str(database), output=str(output), silent=True, limit=2, max_bytes=1
+    )
+    assert result["completed"] == 0
+    assert result["skipped"] == 1
+    entries = [json.loads(line) for line in Path(result["manifest"]).read_text().splitlines()]
+    assert entries[0]["status"] == "skipped"
+    assert "byte limit" in entries[0]["error"]
+    assert [item.name for item in output.iterdir()] == ["manifest.jsonl"]
+
+
+def test_dump_rejects_nonpositive_limit(indexed_workspace, tmp_path: Path):
+    database, _ = indexed_workspace
+    with pytest.raises(QueryValidationError):
+        Dumper().dump(dbfile=str(database), output=str(tmp_path / "x"), silent=True, limit=0)
+
+
+def test_safe_output_path_deduplicates_reserved_collisions(tmp_path: Path):
+    output = tmp_path / "out"
+    output.mkdir()
+    record = {"warc_id": "<urn:uuid:dup>", "ext": "txt", "content_type": "text/plain"}
+    first = safe_output_path(output, record)
+    assert first.name == "urn_uuid_dup.txt"
+    # An on-disk collision gets a counter suffix.
+    first.touch()
+    second = safe_output_path(output, record)
+    assert second.name == "urn_uuid_dup-1.txt"
+    # A collision reserved earlier in the same run also gets a counter suffix.
+    third = safe_output_path(output, record, reserved={first})
+    assert third.name == "urn_uuid_dup-1.txt"
+
+
+def test_listfiles_writes_csv_and_jsonl_and_refuses_overwrite(indexed_workspace, tmp_path: Path):
+    database, _ = indexed_workspace
+    dumper = Dumper()
+    csv_path = tmp_path / "rows.csv"
+    dumper.listfiles(dbfile=str(database), output=str(csv_path), silent=True, output_format="csv")
+    assert csv_path.read_text().splitlines()[0].startswith("archive_id,")
+    with pytest.raises(WorkspaceError):
+        dumper.listfiles(
+            dbfile=str(database), output=str(csv_path), silent=True, output_format="csv"
+        )
+    jsonl_path = tmp_path / "rows.jsonl"
+    rows = dumper.listfiles(
+        dbfile=str(database), output=str(jsonl_path), silent=True, output_format="jsonl"
+    )
+    assert len(jsonl_path.read_text().splitlines()) == len(rows)
+    with pytest.raises(QueryValidationError):
+        dumper.listfiles(
+            dbfile=str(database),
+            output=str(tmp_path / "rows.xml"),
+            silent=True,
+            output_format="xml",
+        )
+
+
+def test_get_unknown_record_returns_none(indexed_workspace):
+    database, _ = indexed_workspace
+    assert Dumper().get_file("urn:uuid:unknown", str(database), silent=True) is None
