@@ -98,4 +98,6 @@ metawarc index-content --dbfile collection.db --text --rescan
 
 See [`search`](/commands/search), [`index-content --text`](/commands/index-content),
 [`/records/search`](/integrations/rest-api), and the `search_records`
-tool in [Agents and MCP](/use-cases/agents-and-mcp).
+tool in [Agents and MCP](/use-cases/agents-and-mcp). For the chained
+`index` → `search` workflow as a single scenario, see
+[Index and search](/use-cases/index-and-search).

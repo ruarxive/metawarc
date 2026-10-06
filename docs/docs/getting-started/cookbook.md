@@ -12,6 +12,7 @@ completely new, do the [quick start](/getting-started/quick-start) first.
 | You are a… | You want to… | Start with |
 |------------|--------------|------------|
 | [Web archivist](/use-cases/indexing-collections) | Build a resumable index of a WARC collection without copying payloads | `index`, `ingest`, `catalog`, `doctor` |
+| [Search operator](/use-cases/index-and-search) | Run the end-to-end `index` → `search` chain over a WARC collection | `index`, `index-content --text`, `search` |
 | [Researcher / journalist](/use-cases/querying-and-export) | Find PDFs, hosts, or date ranges and export selected payloads | `stats`, `list-files`, `dump`, `get` |
 | [Preservation engineer](/use-cases/metadata-and-analysis) | Extract document metadata, hashes, duplicates, and integrity evidence | `index-content`, `analyze` |
 | [Investigator](/use-cases/text-search) | Phrase-search the extracted text of every HTML, PDF, and OOXML record | `index-content --text`, `search` |
@@ -23,6 +24,7 @@ completely new, do the [quick start](/getting-started/quick-start) first.
 ## Detailed walkthroughs
 
 - [Indexing collections](/use-cases/indexing-collections)
+- [Index and search](/use-cases/index-and-search)
 - [Querying and export](/use-cases/querying-and-export)
 - [Metadata and analysis](/use-cases/metadata-and-analysis)
 - [Phrase search](/use-cases/text-search)

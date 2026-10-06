@@ -54,4 +54,5 @@ structured extraction keeps its current cost.
 
 See [`index`](/commands/index-records), [`ingest`](/commands/ingest),
 [`index-content`](/commands/index-content), and
-[workspace layout](/architecture/workspace).
+[workspace layout](/architecture/workspace). For the end-to-end
+`index` → `search` chain, see [Index and search](/use-cases/index-and-search).

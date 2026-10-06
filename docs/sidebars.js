@@ -34,6 +34,7 @@ const sidebars = {
       label: 'Use Cases',
       items: [
         'use-cases/indexing-collections',
+        'use-cases/index-and-search',
         'use-cases/querying-and-export',
         'use-cases/metadata-and-analysis',
         'use-cases/text-search',
