@@ -705,6 +705,29 @@ def cleanup_command(
     click.echo(_json(report))
 
 
+@cli.command("search")
+@workspace_options
+@click.argument("phrase", metavar="<phrase>")
+@click.option("--limit", default=50, show_default=True, type=int)
+def search_command(
+    dbfile: str,
+    data_dir: str | None,
+    phrase: str,
+    limit: int,
+) -> None:
+    """Phrase-search across the indexed ``texts`` sidecar."""
+    try:
+        with Workspace(dbfile, data_dir=data_dir, read_only=True, create=False) as workspace:
+            rows = workspace.search_text(phrase, limit=limit)
+    except ValueError as exc:
+        raise click.UsageError(str(exc)) from exc
+    if not rows:
+        click.echo("(no matches)")
+        return
+    for row in rows:
+        click.echo(f"{row['warc_id']}\t{row['url']}\t{row['snippet']}")
+
+
 @cli.group("analyze", cls=MetawarcGroup)
 def analyze_group() -> None:
     """Run revision-scoped collection analysis."""

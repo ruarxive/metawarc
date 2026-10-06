@@ -30,6 +30,7 @@ and require `--apply` where removal is involved.
 | `stats` | [`/commands/stats`](/commands/stats) |
 | `list-files` | [`/commands/list-files`](/commands/list-files) |
 | `doctor` | [`/commands/doctor`](/commands/doctor) |
+| `search` | [`/commands/search`](/commands/search) |
 
 ## Export
 

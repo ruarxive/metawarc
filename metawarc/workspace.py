@@ -20,6 +20,7 @@ import duckdb
 import pyarrow.parquet as pq
 
 from .errors import SchemaCompatibilityError, WorkspaceError, WorkspaceLockedError
+from .settings import ServerSettings
 
 SCHEMA_VERSION = 2
 SIDECAR_SCHEMA_VERSION = 1
@@ -1039,3 +1040,67 @@ class Workspace:
         path = self.staging_root / run_id
         if path.exists():
             shutil.rmtree(path)
+
+    def _ensure_texts_index(self) -> bool:
+        """No-op placeholder retained for the documented contract.
+
+        The implementation now relies on a columnar Parquet scan rather
+        than DuckDB's FTS extension, which has regressed in DuckDB
+        1.5.x. The scan reads the ``texts`` sidecar on every call; for
+        workspaces with hundreds of thousands of records this is well
+        within Parquet's strengths and avoids a second index to keep in
+        sync.
+
+        Returns True when at least one ``texts`` sidecar is present,
+        False otherwise so callers can surface a useful "no indexable
+        sidecar" message.
+        """
+        paths = self.active_sidecar_paths("texts", None)
+        return bool(paths)
+
+    def search_text(self, phrase: str, *, limit: int = 50) -> list[dict[str, object]]:
+        """Phrase-search across the ``texts`` sidecar.
+
+        Empty phrases and ``limit`` higher than the workspace's
+        ``ServerSettings.max_page`` are rejected. Returns a list of
+        rows shaped ``{archive_id, warc_id, source, url, snippet}``.
+
+        The search reads the sidecar Parquet files via DuckDB's
+        columnar ``read_parquet`` and matches phrases with a
+        case-insensitive ``LIKE`` predicate. The DuckDB FTS extension
+        regressed in 1.5.x (its ``create_fts_index`` pragma fails to
+        materialise the virtual index), so the columnar scan is the
+        dependable backend until a future DuckDB release fixes the
+        pragma.
+        """
+        phrase = phrase.strip()
+        if not phrase:
+            raise ValueError("phrase must not be empty")
+        if limit < 1:
+            raise ValueError("limit must be positive")
+        max_page = ServerSettings.from_env().max_page
+        if limit > max_page:
+            raise ValueError(f"limit must not exceed {max_page}")
+        paths = self.active_sidecar_paths("texts", None)
+        if not paths:
+            return []
+        rows = self.con.execute(
+            """
+            SELECT archive_id, warc_id, source, url,
+                   substring(text, 1, 256) AS snippet
+            FROM read_parquet(?)
+            WHERE text ILIKE ?
+            LIMIT ?
+            """,
+            [paths, f"%{phrase}%", limit],
+        ).fetchall()
+        return [
+            {
+                "archive_id": row[0],
+                "warc_id": row[1],
+                "source": row[2],
+                "url": row[3],
+                "snippet": row[4],
+            }
+            for row in rows
+        ]

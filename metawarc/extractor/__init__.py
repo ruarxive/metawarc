@@ -28,6 +28,7 @@ from .envelope import (
     LINK_SCHEMA,
     METADATA_SCHEMA,
     METADATA_SCHEMA_VERSION,
+    TEXT_SCHEMA,
     ExtractionLimits,
     MetadataEnvelope,
     MetadataExtractor,
@@ -60,6 +61,7 @@ from .pdf import PDFDocument as _PDFDocument  # for backward-compat tests
 from .pdf import PdfExtractor, decode_pdf_metadata_text
 from .record import Extractor, extract_record, processWarcRecord, read_payload_limited
 from .registry import DEFAULT_REGISTRY, ExtractorRegistry
+from .text import TextExtractor
 
 
 def __getattr__(name: str) -> object:
@@ -86,9 +88,11 @@ __all__ = [
     "METADATA_SCHEMA_VERSION",
     "MetadataEnvelope",
     "MetadataExtractor",
+    "TEXT_SCHEMA",
     "OoxmlExtractor",
     "PdfExtractor",
     "SvgExtractor",
+    "TextExtractor",
     "WebpExtractor",
     "_audio_probe",
     "_extension",

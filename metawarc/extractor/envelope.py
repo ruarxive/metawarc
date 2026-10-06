@@ -66,6 +66,17 @@ LINK_SCHEMA = pa.schema(
     ]
 )
 
+TEXT_SCHEMA = pa.schema(
+    [
+        ("archive_id", pa.string()),
+        ("warc_id", pa.string()),
+        ("source", pa.string()),
+        ("url", pa.string()),
+        ("language", pa.string()),
+        ("text", pa.string()),
+    ]
+)
+
 
 @dataclass(frozen=True)
 class ExtractionLimits:
@@ -266,6 +277,7 @@ __all__ = [
     "METADATA_SCHEMA_VERSION",
     "MetadataEnvelope",
     "MetadataExtractor",
+    "TEXT_SCHEMA",
     "_extension",
     "_looks_like_html",
     "_svg_child_text",
