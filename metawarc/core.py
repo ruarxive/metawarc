@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import glob
 import json
+import sys
 from collections.abc import Callable, Sequence
 from dataclasses import replace
 from pathlib import Path
@@ -81,7 +82,7 @@ def _progress_renderer(
         requested,
         silent=silent,
         machine_readable=machine_readable,
-        stream=click.get_text_stream("stderr"),
+        stream=sys.stderr,
     )
     return RichProgressRenderer(enabled=enabled)
 
