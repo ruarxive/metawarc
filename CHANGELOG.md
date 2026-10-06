@@ -20,6 +20,11 @@ All notable changes to this project are documented in this file.
   returns the structured result.
 - `TEXT_SCHEMA` (archive_id, warc_id, source, url, language, text)
   for the new `texts` sidecar kind.
+- `collection_stats(archive_ids, dimensions, top)` and
+  `metadata_summary(metadata_types, archive_ids, top)` MCP tools
+  that wrap `AnalysisService.summary()` and
+  `AnalysisService.stored_metadata()` over the existing allowlist
+  and pagination discipline.
 
 ## 2.0.2 (2026-10-06)
 

@@ -184,6 +184,8 @@ def test_mcp_inventory_is_minimal_and_read_only(indexed_workspace):
         "get_record_metadata",
         "get_record_headers",
         "search_records",
+        "collection_stats",
+        "metadata_summary",
     }
     schema = json.dumps([tool.model_dump() for tool in tools], default=str).lower()
     assert "raw sql" not in schema
