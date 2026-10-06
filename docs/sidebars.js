@@ -36,6 +36,8 @@ const sidebars = {
         'use-cases/indexing-collections',
         'use-cases/querying-and-export',
         'use-cases/metadata-and-analysis',
+        'use-cases/text-search',
+        'use-cases/batch-jobs',
         'use-cases/website-replay',
         'use-cases/agents-and-mcp',
       ],
@@ -62,6 +64,7 @@ const sidebars = {
             'commands/stats',
             'commands/list-files',
             'commands/doctor',
+            'commands/search',
           ],
         },
         {
@@ -87,7 +90,12 @@ const sidebars = {
         {
           type: 'category',
           label: 'Interfaces',
-          items: ['commands/serve', 'commands/replay', 'commands/mcp'],
+          items: [
+            'commands/serve',
+            'commands/replay',
+            'commands/mcp',
+            'commands/jobs',
+          ],
         },
       ],
     },

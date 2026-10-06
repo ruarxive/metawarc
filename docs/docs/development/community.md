@@ -26,7 +26,7 @@ a public issue. See [security](/architecture/security).
 
 All community spaces follow the
 [Contributor Covenant 2.1](https://github.com/ruarxive/metawarc/blob/master/CODE_OF_CONDUCT.md).
-Reports go to <ivan@begtin.tech>.
+Reports go to `ivan@begtin.tech`.
 
 ## Support
 

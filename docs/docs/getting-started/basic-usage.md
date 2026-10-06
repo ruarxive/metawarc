@@ -49,6 +49,9 @@ metawarc list-files --dbfile collection.db \
 `status`, `date`, `size`, or `offset`. `--unsafe-where` is a trusted local CLI
 escape hatch only; REST and MCP never accept raw SQL.
 
+`metawarc jobs submit` accepts the same allowlisted filter keys (passed as
+comma-separated strings), plus `--format` and `--limit`.
+
 ## Progress reporting
 
 Long-running `index`, applied `ingest`, `index-content`, `dump`,

@@ -21,6 +21,20 @@ MCP support requires `pip install metawarc[mcp]`
 **Fix:** install the extra listed in [Installation](/getting-started/installation).
 Core indexing and querying do not need `api` or `mcp`.
 
+### `metawarc search` returns no matches
+
+The workspace has not populated the `texts` sidecar, or the phrase did not
+match. Run `metawarc index-content --text` once and try again. The command
+prints `(no matches)` and exits 0 — it does not raise — when the sidecar is
+empty or the phrase is not present.
+
+### Batch job stays `pending`
+
+`metawarc jobs submit` writes the file immediately; the runner is the
+asyncio Task started by `metawarc serve`'s lifespan handler. Make sure
+`metawarc serve` is running on the same workspace, then re-check
+`metawarc jobs list --status pending`.
+
 ### Unsupported or unrecognized schema
 
 A 2.0 workspace uses schema version 2. Newer schemas fail closed. Legacy 1.2/1.3

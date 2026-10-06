@@ -22,6 +22,9 @@ metawarc ingest 'archives/**/*.warc*' --dbfile collection.db --dry-run
 
 # Bound payload export volume
 metawarc dump --dbfile collection.db --exts pdf --limit 1000 --max-bytes 104857600 --output exported
+
+# Submit a long-running export as a batch job
+metawarc jobs submit --format csv --limit 50000 --mimes application/pdf
 ```
 
 ## Notes
@@ -32,6 +35,9 @@ metawarc dump --dbfile collection.db --exts pdf --limit 1000 --max-bytes 1048576
 - `doctor` reports orphans; `cleanup` previews retired/staging files (requires `--apply` to remove).
 - Progress is automatic on interactive stderr; `--no-progress` or `--silent` disables it.
 - Website replay streams payloads with a configured byte cap; it is not a bulk export path.
+- Phrase search reads the active `texts` Parquet files via DuckDB's
+  `read_parquet`. There is no separate index to build; `--text` on
+  `index-content` writes the projection.
 
 ## Performance tips
 
@@ -42,5 +48,10 @@ metawarc dump --dbfile collection.db --exts pdf --limit 1000 --max-bytes 1048576
 5. **Extract only needed types**: `index-content --type pdfs` is cheaper than extracting every family.
 6. **Keep workspace local**: DuckDB and Parquet sidecars should live on fast local disk next to the catalog.
 7. **Do not pre-scan for progress**: unknown totals are shown as counters; Metawarc will not read a WARC twice just to compute a percentage.
+8. **Push large exports into batch jobs**: when a single HTTP request
+   would exceed `METAWARC_REQUEST_TIMEOUT_SECONDS` (default 30 s),
+   submit `metawarc jobs submit` instead of looping `list-files`.
 
-See also: [Indexing collections](/use-cases/indexing-collections), [Workspace](/architecture/workspace).
+See also: [Indexing collections](/use-cases/indexing-collections),
+[Batch jobs](/use-cases/batch-jobs),
+[Workspace](/architecture/workspace).

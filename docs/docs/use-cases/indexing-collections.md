@@ -40,5 +40,18 @@ metawarc index archives --dbfile collection.db --resume --hash-payloads
 Hashes are cataloged sidecars and can also be computed later with
 `analyze hashes`.
 
-See [`index`](/commands/index-records), [`ingest`](/commands/ingest), and
+## Optional text sidecar for phrase search
+
+```bash
+metawarc index-content --dbfile collection.db --text
+```
+
+Runs the text-extractor chain (`TextExtractor` for HTML,
+`PdfTextExtractor` for PDF, `OoxmlTextExtractor` for OOXML) and writes
+the `texts` Parquet sidecar that feeds `metawarc search`,
+`GET /records/search`, and the `search_records` MCP tool. Default off so
+structured extraction keeps its current cost.
+
+See [`index`](/commands/index-records), [`ingest`](/commands/ingest),
+[`index-content`](/commands/index-content), and
 [workspace layout](/architecture/workspace).

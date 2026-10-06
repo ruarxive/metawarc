@@ -22,6 +22,13 @@ filesystem paths. There is no payload dump or mutation tool.
 - `list_records` (allowlisted filters, default limit 50, max page 100)
 - `get_record_metadata`
 - `get_record_headers`
+- `search_records` — phrase-search across the `texts` Parquet sidecar
+  (requires [`index-content --text`](/commands/index-content))
+- `collection_stats` — per-dimension rollups
+  (`mime`, `ext`, `status`, `host`, `date`, `size_bucket`)
+- `metadata_summary` — per-type extraction rollups
+  (`pdfs`, `images`, `ooxmldocs`, `oledocs`, `videos`, `audio`, `fonts`,
+  or `all`)
 
 Non-loopback MCP transport requires `--allow-insecure`.
 

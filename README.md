@@ -101,17 +101,26 @@ Changed archives retain their stable catalog ID. A moved source is reported as
 a candidate and requires `metawarc rebind ARCHIVE_ID NEW_PATH`; Metawarc never
 silently guesses identity.
 
-## Metadata and analysis
+## Metadata, analysis, and search
 
 ```bash
 metawarc index-content --dbfile collection.db --type links --type pdfs
+metawarc index-content --dbfile collection.db --type images --type videos --type audio --type fonts
+metawarc index-content --dbfile collection.db --text                  # populate texts sidecar
 metawarc analyze summary --dbfile collection.db --output summary.json
 metawarc analyze metadata --dbfile collection.db --type all --top 20
 metawarc analyze hashes --dbfile collection.db --resume
 metawarc analyze duplicates --dbfile collection.db --output duplicates.csv --output-format csv
 metawarc analyze links --dbfile collection.db --output links.parquet --output-format parquet
 metawarc analyze integrity --dbfile collection.db --deep --max-records 1000
+metawarc search "Welcome to the museum" --dbfile collection.db         # phrase-search over 'texts'
 ```
+
+`index-content --text` runs the text-extractor chain (`TextExtractor` for
+HTML, `PdfTextExtractor` for PDF, `OoxmlTextExtractor` for OOXML) and
+writes a `texts` Parquet sidecar that feeds `metawarc search`,
+`GET /records/search`, and the `search_records` MCP tool. The search is
+a bounded DuckDB columnar scan (DuckDB's FTS extension regressed in 1.5.x).
 
 Extraction uses MIME, extension, and bounded signature signals. Results include
 a versioned envelope, normalized metadata, raw parser output, warnings, stable
@@ -120,7 +129,7 @@ limits are applied before a derived sidecar is published.
 
 Supported content families include Office Open XML documents, templates,
 macro-enabled files, binary workbooks, and presentations (including PPSX); PDF;
-GIF, SVG, WebP, icons, bitmap, camera, and editing images; common MP4/QuickTime,
+GIF, SVG, WebP, icons, camera, and editing images; common MP4/QuickTime,
 AVI, WebM/Matroska, Ogg, MPEG, ASF/WMV, and FLV video; MP3, WAV, AIFF, FLAC,
 Ogg/Opus, M4A, WMA, MIDI, and RealAudio; and TTF/OTF, font collections, WOFF,
 WOFF2, and EOT fonts.
@@ -137,6 +146,32 @@ not exposed by REST or MCP. Payload exports sanitize record IDs, avoid
 overwrites, stream in source order, enforce record/byte limits, and write a
 JSONL manifest with SHA-256 checksums.
 
+## Batch jobs
+
+Long-running exports that do not fit inside a single HTTP timeout can be
+submitted as durable batch jobs. The MVP ships the `export-records` job kind,
+which materialises the result of `QueryService.list_records` to JSON, CSV, or
+Parquet under `<data_dir>/jobs/<job_id>/`.
+
+```bash
+# CLI
+metawarc jobs submit --format csv --limit 50000 --mimes application/pdf --output-format csv
+metawarc jobs list --status running
+metawarc jobs wait <job_id>
+metawarc jobs cancel <job_id>
+
+# REST (when 'metawarc serve' is running)
+curl -H "Authorization: Bearer $METAWARC_API_TOKEN" \
+     -H 'Content-Type: application/json' \
+     -d '{"kind":"export-records","format":"csv","limit":50000,"filters":{"mimes":"application/pdf"}}' \
+     http://127.0.0.1:8000/jobs
+```
+
+Job state persists across restarts; concurrency is bounded by
+`METAWARC_JOB_MAX_CONCURRENT` (default 4) and per-job execution by
+`METAWARC_JOB_TIMEOUT` (default 300s). The bearer-token discipline is
+inherited from the existing `/records` and `/replay` endpoints.
+
 ## REST API and MCP
 
 ```bash
@@ -145,12 +180,15 @@ metawarc mcp --dbfile collection.db                    # stdio
 metawarc mcp --dbfile collection.db --transport http  # loopback only by default
 ```
 
-`serve` exposes the typed record API and the website replay routes described
-above. Both network services bind to loopback by default. Non-loopback REST
-binding requires a bearer token or an explicit `--allow-insecure`
-acknowledgement. The MCP surface is read-only and contains no raw SQL,
-filesystem-path, payload, or mutation tool. Non-loopback MCP transport requires
-explicit acknowledgement.
+`serve` exposes the typed record API (`/records/list`, `/records/get/...`,
+`/records/search`), the durable batch-job API (`/jobs`), and the website
+replay routes described above. Both network services bind to loopback by
+default. Non-loopback REST binding requires a bearer token or an explicit
+`--allow-insecure` acknowledgement. The MCP surface is read-only and
+contains no raw SQL, filesystem-path, payload, or mutation tool; it ships
+`list_archives`, `list_records`, `get_record_metadata`, `get_record_headers`,
+`search_records`, `collection_stats`, and `metadata_summary`. Non-loopback
+MCP transport requires explicit acknowledgement.
 
 See the [documentation site](https://ruarxive.org/metawarc/) for
 architecture, CLI reference, replay, and release guidance. Repository copies:

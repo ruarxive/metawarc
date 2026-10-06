@@ -4,18 +4,20 @@ description: "Pick a role and goal, then follow verified metawarc commands"
 ---
 # Cookbook
 
-metawarc covers indexing, query, extraction, analysis, and replay. This page is a
-task-oriented index: find the row that sounds like you, then follow the linked
-reference. If you are completely new, do the
-[quick start](/getting-started/quick-start) first.
+metawarc covers indexing, query, extraction, analysis, search, batch
+export, and replay. This page is a task-oriented index: find the row
+that sounds like you, then follow the linked reference. If you are
+completely new, do the [quick start](/getting-started/quick-start) first.
 
 | You are a… | You want to… | Start with |
 |------------|--------------|------------|
 | [Web archivist](/use-cases/indexing-collections) | Build a resumable index of a WARC collection without copying payloads | `index`, `ingest`, `catalog`, `doctor` |
 | [Researcher / journalist](/use-cases/querying-and-export) | Find PDFs, hosts, or date ranges and export selected payloads | `stats`, `list-files`, `dump`, `get` |
 | [Preservation engineer](/use-cases/metadata-and-analysis) | Extract document metadata, hashes, duplicates, and integrity evidence | `index-content`, `analyze` |
+| [Investigator](/use-cases/text-search) | Phrase-search the extracted text of every HTML, PDF, and OOXML record | `index-content --text`, `search` |
+| [Data engineer](/use-cases/batch-jobs) | Materialise a 50 000-record CSV that does not fit a single HTTP request | `jobs submit`, `jobs wait` |
 | [Replay operator](/use-cases/website-replay) | Browse archived sites locally or feed pywb | `serve`, `replay`, `export-cdxj` |
-| [Application developer](/integrations/rest-api) | Expose a read-only typed API over an index | `serve`, REST `/records/list` |
+| [Application developer](/integrations/rest-api) | Expose a read-only typed API over an index | `serve`, REST `/records/list`, `/records/search`, `/jobs` |
 | [AI / automation builder](/use-cases/agents-and-mcp) | Give agents controlled metadata tools | `mcp` |
 
 ## Detailed walkthroughs
@@ -23,5 +25,7 @@ reference. If you are completely new, do the
 - [Indexing collections](/use-cases/indexing-collections)
 - [Querying and export](/use-cases/querying-and-export)
 - [Metadata and analysis](/use-cases/metadata-and-analysis)
+- [Phrase search](/use-cases/text-search)
+- [Batch jobs](/use-cases/batch-jobs)
 - [Website replay](/use-cases/website-replay)
 - [Agents and MCP](/use-cases/agents-and-mcp)

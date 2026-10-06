@@ -15,8 +15,10 @@ specialized strengths.
 | Full Wayback-style replay with Wombat/JavaScript fidelity | **pywb** (export CDXJ from metawarc) |
 | Parse or rewrite WARC records in Python | **warcio** (also used inside metawarc) |
 | Capture-time CDX lookup without a catalog | **CDX/CDXJ** files |
-| Fetch live websites into WARC | **wget --warc-file**, Browsertrix, or similar crawlers |
+| Fetch live websites into WARC | **wget --warc-file`, Browsertrix, or similar crawlers |
 | Bounded local HTML/CSS replay from an existing index | **metawarc** (`serve` / `replay`) |
+| Phrase-search over the extracted text of HTML, PDF, and OOXML records | **metawarc** (`index-content --text` + `search`) |
+| Long-running exports or analyses that exceed a single HTTP timeout | **metawarc** (`jobs submit` / `serve /jobs`) |
 | Agent/MCP tooling over indexed metadata | **metawarc** (`mcp`) |
 
 ## metawarc strengths
@@ -24,7 +26,11 @@ specialized strengths.
 - Versioned DuckDB catalog with Parquet sidecars and stable archive IDs
 - Typed, parameterized queries shared by CLI, REST, and MCP
 - Bounded metadata extraction (PDF, OOXML, images, video, audio, fonts, links)
+- Phrase-search over the `texts` Parquet sidecar (columnar scan; DuckDB's
+  FTS extension regressed in 1.5.x)
 - Collection analysis: summary, hashes, duplicates, links, integrity
+- Durable batch jobs (`metawarc jobs submit` and `POST /jobs`) for
+  long-running exports
 - Local website replay plus CDXJ export for pywb interop
 - Source WARC files remain immutable; interrupted writes do not publish incomplete sidecars
 
