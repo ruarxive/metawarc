@@ -19,7 +19,8 @@ improvement plan and full traceability.
 | `metadata-extraction` | `harden-metadata-extraction`, `expand-media-format-extraction` |
 | `collection-analysis` | `add-collection-analysis`, `add-metadata-analysis` |
 | `website-replay` | `add-website-replay` |
-| `remote-interfaces` | `secure-query-export-interfaces`, `add-website-replay`, `add-full-text-search`, `extend-text-search-to-pdf-ooxml`, `add-index-texts`, `enrich-mcp-readonly-surface` |
+| `remote-interfaces` | `secure-query-export-interfaces`, `add-website-replay`, `add-full-text-search`, `extend-text-search-to-pdf-ooxml`, `add-index-texts`, `enrich-mcp-readonly-surface`, `add-batch-job-api` |
+| `remote-batch-job` | `add-batch-job-api` |
 | `cli-progress` | `add-cli-progress-reporting` |
 | `build-system` / `release-engineering` / `test-assurance` / `documentation-quality` | `consolidate-release-baseline`, `establish-quality-gates` |
 
@@ -30,8 +31,6 @@ own change proposals (see the 2026-09-17 review, Phase 2, for ordering):
 
 1. Collection exploration dashboard — read-only web UI over the catalog
    (hosts, MIME stats, timelines), distinct from page replay.
-2. Authenticated durable batch-job API — async export/analysis jobs for large
-   collections.
 
 Each deferred item requires its own future OpenSpec change rather than being
 silently included in an earlier implementation.
