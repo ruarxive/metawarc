@@ -376,6 +376,11 @@ def ingest_command(
 @click.option("--rescan", is_flag=True)
 @click.option("--batch-size", default=1_000, show_default=True, type=click.IntRange(min=1))
 @click.option("--silent", "-s", is_flag=True)
+@click.option(
+    "--text",
+    is_flag=True,
+    help="Also write the 'texts' sidecar with plain-text projections for HTML, PDF, and OOXML payloads.",
+)
 @progress_options
 def index_content_command(
     sources: tuple[str, ...],
@@ -385,6 +390,7 @@ def index_content_command(
     rescan: bool,
     batch_size: int,
     silent: bool,
+    text: bool,
     progress: bool | None,
 ) -> None:
     """Build typed derived metadata indexes from catalog records."""
@@ -443,8 +449,18 @@ def index_content_command(
             results.append(result)
             for name in content_counts:
                 content_counts[name] += int(result[name])
+        if text:
+            text_result = extractor.index_texts(
+                selected,
+                dbfile,
+                rescan=rescan,
+                silent=silent,
+                data_dir=data_dir,
+                progress=content_progress if renderer.callback is not None else None,
+            )
+            results.append({"kind": "texts", **text_result})
     click.echo(_json(results))
-    if any(result["failed"] for result in results):
+    if any(result.get("failed", 0) for result in results):
         raise click.ClickException("One or more content-indexing operations failed")
 
 

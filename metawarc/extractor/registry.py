@@ -100,7 +100,12 @@ class ExtractorRegistry:
         ]
         mime_matches = [item for item in candidates if normalized in item.mimes]
         ext_matches = [item for item in candidates if extension in item.extensions]
-        if expected_type != "links" and _looks_like_html(prefix) and (mime_matches or ext_matches):
+        if (
+            expected_type != "links"
+            and _looks_like_html(prefix)
+            and (mime_matches or ext_matches)
+            and not all(item.name in TEXT_EXTRACTOR_NAMES for item in (mime_matches + ext_matches))
+        ):
             warnings.append("Payload appears to be HTML; refusing binary format selection")
             return None, warnings
         if mime_matches and ext_matches and mime_matches[0] is not ext_matches[0]:
@@ -123,4 +128,20 @@ class ExtractorRegistry:
 DEFAULT_REGISTRY = ExtractorRegistry()
 
 
-__all__ = ["DEFAULT_REGISTRY", "ExtractorRegistry"]
+# Names of the text-projection extractors in the default registry. The
+# indexer uses this set to filter the text chain from the metadata chain
+# without coupling to class identity (the registry already returns
+# instances by name).
+TEXT_EXTRACTOR_NAMES = frozenset({"beautifulsoup-text", "pdfminer-text", "ooxml-text"})
+
+
+def get_text_registry() -> ExtractorRegistry:
+    """Return a registry containing only the text-projection extractors."""
+    return ExtractorRegistry(
+        extractors=[
+            item for item in DEFAULT_REGISTRY.extractors if item.name in TEXT_EXTRACTOR_NAMES
+        ]
+    )
+
+
+__all__ = ["DEFAULT_REGISTRY", "ExtractorRegistry", "get_text_registry"]

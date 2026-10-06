@@ -60,7 +60,7 @@ from .office import OoxmlExtractor
 from .pdf import PDFDocument as _PDFDocument  # for backward-compat tests
 from .pdf import PdfExtractor, decode_pdf_metadata_text
 from .record import Extractor, extract_record, processWarcRecord, read_payload_limited
-from .registry import DEFAULT_REGISTRY, ExtractorRegistry
+from .registry import DEFAULT_REGISTRY, ExtractorRegistry, get_text_registry
 from .text import TextExtractor
 from .text_ooxml import OoxmlTextExtractor
 from .text_pdf import PdfTextExtractor
@@ -81,6 +81,7 @@ __all__ = [
     "Extractor",
     "ExtractorRegistry",
     "ExtractionLimits",
+    "get_text_registry",
     "FONT_NAME_IDS",
     "FontExtractor",
     "HachoirExtractor",

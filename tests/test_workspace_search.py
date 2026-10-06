@@ -125,7 +125,7 @@ def test_search_text_round_trips_pdf_payload(indexed_workspace, monkeypatch) -> 
     from metawarc.extractor import PdfTextExtractor
 
     database, _ = indexed_workspace
-    with Workspace(str(database), read_only=False, create=False) as workspace:
+    with Workspace(str(database), read_only=False, create=False):
         # Synthesise a PDF payload from the test fixture.
         pdf_bytes = (
             b"%PDF-1.4\n"
