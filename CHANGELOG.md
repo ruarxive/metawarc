@@ -2,6 +2,25 @@
 
 All notable changes to this project are documented in this file.
 
+## Unreleased
+
+### Added
+
+- `metawarc.extractor.text.TextExtractor` strips HTML, scripts, and
+  style blocks via BeautifulSoup and emits a bounded plain-text blob
+  under `ExtractionLimits`.
+- `metawarc search <phrase> [--limit N]` CLI subcommand for
+  phrase-search over the indexed `texts` sidecar.
+- `Workspace.search_text(phrase, limit=50)` method backed by a Parquet
+  columnar scan over the `texts` sidecar (DuckDB's FTS extension
+  regressed in 1.5.x so a columnar scan is the dependable backend).
+- `GET /records/search?phrase=<text>&limit=<n>` REST endpoint with the
+  same bearer-token discipline as `/warcs/list`.
+- `search_records` MCP tool that calls `Workspace.search_text` and
+  returns the structured result.
+- `TEXT_SCHEMA` (archive_id, warc_id, source, url, language, text)
+  for the new `texts` sidecar kind.
+
 ## 2.0.2 (2026-10-06)
 
 ### Fixed
