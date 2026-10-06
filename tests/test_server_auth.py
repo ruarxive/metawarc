@@ -41,7 +41,9 @@ def test_wrong_token_returns_401(indexed_workspace) -> None:
     with TestClient(create_app(_settings(database, token="secret"))) as client:
         for path in PROTECTED_PATHS:
             params = {"phrase": "museum"} if path == "/records/search" else {}
-            response = client.get(path, params=params, headers={"Authorization": "Bearer not-the-secret"})
+            response = client.get(
+                path, params=params, headers={"Authorization": "Bearer not-the-secret"}
+            )
             assert response.status_code == 401, path
 
 
