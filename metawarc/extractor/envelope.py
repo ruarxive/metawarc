@@ -232,9 +232,18 @@ def _svg_child_text(root: etree._Element, names: tuple[str, ...]) -> str | None:
 def extraction_deadline(seconds: float) -> Iterator[None]:
     """Best-effort hard deadline on POSIX main threads, elapsed check elsewhere."""
     start = time.monotonic()
+    # The signal API used here is POSIX-only. Resolve the names through
+    # ``getattr`` and narrow the types so static analysers do not require
+    # the Windows ``signal`` stubs to declare SIGALRM, ITIMER_REAL, and
+    # ``setitimer`` (none of which are exposed there).
+    sigalrm: int | None = getattr(signal, "SIGALRM", None)
+    itimer_real: int | None = getattr(signal, "ITIMER_REAL", None)
+    setitimer = getattr(signal, "setitimer", None)
     armed = (
         seconds > 0
-        and hasattr(signal, "setitimer")
+        and setitimer is not None
+        and sigalrm is not None
+        and itimer_real is not None
         and threading.current_thread() is threading.main_thread()
     )
     old_handler: Any = None
@@ -243,15 +252,17 @@ def extraction_deadline(seconds: float) -> Iterator[None]:
         raise ExtractionLimitError(f"extraction exceeded {seconds:g} seconds")
 
     if armed:
-        old_handler = signal.getsignal(signal.SIGALRM)
-        signal.signal(signal.SIGALRM, timeout_handler)
-        signal.setitimer(signal.ITIMER_REAL, seconds)
+        assert sigalrm is not None and itimer_real is not None and setitimer is not None
+        old_handler = signal.getsignal(sigalrm)
+        signal.signal(sigalrm, timeout_handler)
+        setitimer(itimer_real, seconds)
     try:
         yield
     finally:
         if armed:
-            signal.setitimer(signal.ITIMER_REAL, 0)
-            signal.signal(signal.SIGALRM, old_handler)
+            assert sigalrm is not None and itimer_real is not None and setitimer is not None
+            setitimer(itimer_real, 0)
+            signal.signal(sigalrm, old_handler)
         if time.monotonic() - start > seconds > 0:
             raise ExtractionLimitError(f"extraction exceeded {seconds:g} seconds")
 
