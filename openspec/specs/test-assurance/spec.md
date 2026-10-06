@@ -1,7 +1,11 @@
 # test-assurance Specification
 
 ## Purpose
-TBD - created by archiving change establish-quality-gates. Update Purpose after archive.
+Holds the package to a layered quality gate: representative real-WARC
+fixtures, end-to-end workflows through built artifacts, contract tests for
+every CLI command and remote endpoint, full-tree static analysis, a
+repository-wide coverage floor, per-module coverage floors for every public
+surface module, and dependency and secret audits with SBOM publication.
 ## Requirements
 ### Requirement: Representative WARC fixtures
 The test suite SHALL include generated compressed and uncompressed WARC fixtures

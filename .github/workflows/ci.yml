@@ -18,6 +18,8 @@ jobs:
             python: "3.13"
           - os: macos-latest
             python: "3.13"
+          - os: windows-latest
+            python: "3.13"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7
@@ -27,11 +29,16 @@ jobs:
           cache: pip
       - run: python -m pip install --upgrade pip
       - run: pip install -e '.[all,dev]'
+      - name: pip-audit (contributor-path dependency closure)
+        run: pip-audit
       - run: ruff format --check .
       - run: ruff check .
       - run: mypy metawarc
       - run: pytest --cov=metawarc --cov-report=term-missing --cov-fail-under=75
-      - run: pytest tests/test_workspace_index.py tests/test_query_export.py --cov=metawarc.cmds.indexer --cov-fail-under=70
+      - run: pytest tests/test_workspace_index.py tests/test_query_export.py --cov=metawarc.indexer --cov-fail-under=70
+      - run: pytest --cov=metawarc.api_server --cov-fail-under=70
+      - run: pytest --cov=metawarc.dump --cov-fail-under=70
+      - run: pytest --cov=metawarc.mcp_server --cov-fail-under=70
 
   package:
     runs-on: ubuntu-latest

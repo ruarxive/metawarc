@@ -1,7 +1,10 @@
 # cli-progress Specification
 
 ## Purpose
-TBD - created by archiving change add-cli-progress-reporting. Update Purpose after archive.
+Renders monotonic progress for long-running index, ingest, extract, dump, and
+analysis commands from a presentation-neutral service-layer callback. The
+renderer is suppressed in non-interactive runs so library callers see no
+output unless they ask for it.
 ## Requirements
 ### Requirement: Shared progress events
 Long-running core services SHALL accept an optional presentation-neutral

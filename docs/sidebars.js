@@ -116,6 +116,7 @@ const sidebars = {
         'development/contributing',
         'development/release-checklist',
         'development/community',
+        'development/support',
       ],
     },
     'license',

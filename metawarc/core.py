@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import glob
 import json
-import logging
 from collections.abc import Callable, Sequence
 from dataclasses import replace
 from pathlib import Path
@@ -14,10 +13,10 @@ import click
 
 from . import __version__
 from .analysis import STORED_METADATA_TYPES, AnalysisReport, AnalysisService, write_report
-from .cmds.dump import Dumper
-from .cmds.extractor import ContentIndexer
-from .cmds.indexer import Indexer
+from .dump import Dumper
 from .errors import MetawarcError
+from .extractor import ContentIndexer
+from .indexer import Indexer
 from .ingestion import IncrementalIngestor
 from .progress import ProgressEvent, RichProgressRenderer, resolve_progress
 from .query import QueryService, RecordQuery
@@ -126,10 +125,9 @@ def _emit_report(
     output_format: str,
 ) -> None:
     if output_format == "table":
-        from rich.console import Console
-        from rich.json import JSON
+        from .reporting import render_json
 
-        Console().print(JSON.from_data(report.to_dict(), default=str))
+        render_json(report)
         return
     if output:
         write_report(report, output, output_format)
@@ -224,10 +222,9 @@ def record_filter_options(function: F) -> F:
 @click.option("--verbose", "-v", is_flag=True, help="Enable informational logs.")
 def cli(verbose: bool) -> None:
     """Index, query, export, and analyze WARC collections."""
-    logging.basicConfig(
-        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
-        level=logging.INFO if verbose else logging.WARNING,
-    )
+    # Logging configuration is owned by :mod:`metawarc.__main__` so library
+    # callers that import ``metawarc`` are not silently reconfigured.
+    del verbose
 
 
 @cli.command("index")
@@ -358,26 +355,9 @@ def ingest_command(
     if output_format == "json":
         click.echo(_json(result))
     else:
-        from rich.console import Console
-        from rich.table import Table
+        from .reporting import render_ingest_plan
 
-        table = Table(title=f"Incremental ingestion plan (revision {plan.revision})")
-        for column in ("action", "source", "archive_id", "reason"):
-            table.add_column(column, overflow="fold")
-        for action in plan.actions:
-            table.add_row(
-                action.action,
-                action.source,
-                action.archive_id or "",
-                action.reason or "",
-            )
-        Console().print(table)
-        if summary:
-            click.echo(
-                f"Run {summary.run_id}: {summary.processed} processed, "
-                f"{summary.skipped} skipped, {summary.failed} failed "
-                f"in {summary.duration_ms} ms (revision {summary.revision})"
-            )
+        render_ingest_plan(plan, summary)
     if summary and summary.failed:
         raise click.ClickException(f"{summary.failed} source(s) failed")
 
@@ -479,20 +459,9 @@ def catalog_command(dbfile: str, data_dir: str | None, output_format: str) -> No
     if output_format == "json":
         click.echo(_json({"revision": revision, "archives": archives}))
         return
-    from rich.console import Console
-    from rich.table import Table
+    from .reporting import render_catalog
 
-    table = Table(title=f"Metawarc catalog (revision {revision})")
-    for column in ("id", "filename", "status", "num_records", "source_path"):
-        table.add_column(column, overflow="fold")
-    for archive in archives:
-        table.add_row(
-            *(
-                str(archive.get(column, ""))
-                for column in ("id", "filename", "status", "num_records", "source_path")
-            )
-        )
-    Console().print(table)
+    render_catalog(archives, revision)
 
 
 @cli.command("stats")
@@ -1053,7 +1022,7 @@ def _run_serve(
         raise click.ClickException(
             "API/replay support requires `pip install metawarc[api]` or `metawarc[replay]`"
         ) from exc
-    from .cmds.server import create_app
+    from .api_server import create_app
 
     uvicorn.run(create_app(settings), host=settings.host, port=settings.port)
 

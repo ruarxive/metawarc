@@ -1,7 +1,10 @@
 # index-workspace Specification
 
 ## Purpose
-TBD - created by archiving change stabilize-index-workspace. Update Purpose after archive.
+Defines the catalog and Parquet sidecar layout that backs every command,
+with an explicit workspace root that owns its database and data directory.
+Legacy 1.2 and 1.3 layouts are detected and migrated, rebuilt, or
+rejected with a documented user-visible message.
 ## Requirements
 ### Requirement: Explicit workspace root
 Every index SHALL have an explicit workspace root that owns its catalog,

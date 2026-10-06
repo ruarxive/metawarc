@@ -15,7 +15,7 @@ from urllib.parse import urljoin, urlsplit
 from lxml import etree
 from lxml import html as lxml_html
 
-from .cmds.dump import iter_payload
+from .dump import iter_payload
 from .errors import MetawarcError, QueryValidationError
 from .query import QueryService, RecordQuery, _coerce_timestamp
 from .workspace import Workspace, canonical_path

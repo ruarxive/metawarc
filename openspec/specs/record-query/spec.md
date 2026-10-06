@@ -1,7 +1,10 @@
 # record-query Specification
 
 ## Purpose
-TBD - created by archiving change secure-query-export-interfaces. Update Purpose after archive.
+Selects records through a typed query service with allowlisted fields and
+operators, parameterized values, deterministic pagination, and configurable
+page, byte, and time limits. Raw SQL is restricted to a visibly named local
+CLI flag and is never reachable through the REST or MCP interfaces.
 ## Requirements
 ### Requirement: Typed record filters
 The query service SHALL support typed filters for archive ID, MIME type,

@@ -30,10 +30,10 @@ from pdfminer.pdfparser import PDFParser
 from pdfminer.utils import decode_text
 from warcio import ArchiveIterator
 
-from ..constants import MIMES_EXT_TYPE_BY_GROUP
-from ..errors import ExtractionLimitError, WorkspaceError
-from ..progress import ProgressCallback, ProgressEvent, emit_progress
-from ..workspace import Workspace, canonical_path
+from .constants import MIMES_EXT_TYPE_BY_GROUP
+from .errors import ExtractionLimitError, WorkspaceError
+from .progress import ProgressCallback, ProgressEvent, emit_progress
+from .workspace import Workspace, canonical_path
 
 LOGGER = logging.getLogger(__name__)
 

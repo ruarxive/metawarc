@@ -1,7 +1,10 @@
 # documentation-quality Specification
 
 ## Purpose
-TBD - created by archiving change establish-quality-gates. Update Purpose after archive.
+Holds the project documentation to the same quality bar as the code:
+documented CLI examples are tested, feature status is honest, the workspace
+layout and compatibility story are recorded, and the repository ships a
+contributor guide, security policy, code of conduct, and support document.
 ## Requirements
 ### Requirement: Tested command documentation
 Documented CLI invocations SHALL be executed as documentation tests or covered

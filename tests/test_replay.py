@@ -9,9 +9,9 @@ import pytest
 from click.testing import CliRunner
 from fastapi.testclient import TestClient
 
-from metawarc.cmds.indexer import Indexer
-from metawarc.cmds.server import create_app
+from metawarc.api_server import create_app
 from metawarc.core import cli
+from metawarc.indexer import Indexer
 from metawarc.query import QueryService
 from metawarc.replay import (
     ReplayError,

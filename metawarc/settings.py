@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ipaddress
 import os
 from dataclasses import dataclass
 
@@ -55,8 +56,32 @@ class ServerSettings:
         )
 
 
+_LOOPBACK_HOSTS = {"localhost"}
+
+
 def is_loopback(host: str) -> bool:
-    return host.lower() in {"127.0.0.1", "::1", "localhost"}
+    """Return True if *host* identifies the loopback interface.
+
+    Accepts every canonical IPv4 and IPv6 loopback representation,
+    including the IPv6 long form (``0:0:0:0:0:0:0:1``) and bracketed
+    IPv6 literals (``[::1]``). Hostnames resolve case-insensitively
+    against a small explicit allowlist (``localhost``). Any other
+    string falls through to :func:`ipaddress.ip_address`; a
+    ``ValueError`` (malformed host) is treated as non-loopback so the
+    caller raises the documented security message.
+    """
+    if not host:
+        return False
+    candidate = host.strip().lower()
+    if candidate in _LOOPBACK_HOSTS:
+        return True
+    bracketed = (
+        candidate[1:-1] if candidate.startswith("[") and candidate.endswith("]") else candidate
+    )
+    try:
+        return ipaddress.ip_address(bracketed).is_loopback
+    except ValueError:
+        return False
 
 
 __all__ = ["ServerSettings", "env_bool", "env_int", "env_str", "is_loopback"]

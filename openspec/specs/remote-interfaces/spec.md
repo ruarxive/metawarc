@@ -1,7 +1,12 @@
 # remote-interfaces Specification
 
 ## Purpose
-TBD - created by archiving change secure-query-export-interfaces. Update Purpose after archive.
+Exposes the typed query and export services through a read-only REST API
+and an explicit read-only MCP tool allowlist. Both servers bind to loopback
+by default, recognize every canonical IPv4 and IPv6 loopback representation,
+require configured authentication or an explicit insecure acknowledgement
+for non-loopback binds, and enforce the same page, byte, time, and
+concurrency limits as the local CLI.
 ## Requirements
 ### Requirement: Safe bind default
 REST and MCP servers SHALL bind to `127.0.0.1` by default.

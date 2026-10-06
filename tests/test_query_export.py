@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from metawarc.cmds.dump import Dumper, safe_output_path, safe_record_token
+from metawarc.dump import Dumper, safe_output_path, safe_record_token
 from metawarc.errors import QueryValidationError, WorkspaceError
 from metawarc.query import QueryService, RecordQuery
 from metawarc.workspace import Workspace

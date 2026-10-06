@@ -16,11 +16,11 @@ from typing import Any
 
 from warcio import ArchiveIterator
 
-from ..constants import MIME_EXT_MAP
-from ..errors import QueryValidationError, WorkspaceError
-from ..progress import ProgressCallback, ProgressEvent, emit_progress
-from ..query import MAX_PAGE_SIZE, QueryService, RecordQuery
-from ..workspace import Workspace, canonical_path, utc_now
+from .constants import MIME_EXT_MAP
+from .errors import QueryValidationError, WorkspaceError
+from .progress import ProgressCallback, ProgressEvent, emit_progress
+from .query import MAX_PAGE_SIZE, QueryService, RecordQuery
+from .workspace import Workspace, canonical_path, utc_now
 
 READ_SIZE = 1024 * 1024
 SAFE_TOKEN = re.compile(r"[^A-Za-z0-9._-]+")

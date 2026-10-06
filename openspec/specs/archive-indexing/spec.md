@@ -1,7 +1,9 @@
 # archive-indexing Specification
 
 ## Purpose
-TBD - created by archiving change stabilize-index-workspace. Update Purpose after archive.
+Indexes WARC and WARC.GZ sources into a versioned catalog with stable archive
+identities, deterministic offsets, and resumable checkpoints. Source archives
+are treated as immutable inputs and are never rewritten by the indexer.
 ## Requirements
 ### Requirement: Supported WARC containers
 The indexer SHALL process both uncompressed `.warc` and compressed `.warc.gz`

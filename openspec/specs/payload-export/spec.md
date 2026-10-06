@@ -1,7 +1,10 @@
 # payload-export Specification
 
 ## Purpose
-TBD - created by archiving change secure-query-export-interfaces. Update Purpose after archive.
+Extracts payloads and headers from a workspace with sanitized, collision-free
+filenames, no silent overwrite, configured record and total-byte limits, and
+a JSONL manifest that records the source archive, record ID, URL, MIME,
+byte count, and SHA-256 for every exported file.
 ## Requirements
 ### Requirement: Safe output paths
 Payload export SHALL generate filenames that remain direct children of the

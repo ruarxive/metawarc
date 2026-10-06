@@ -1,7 +1,11 @@
 # metadata-extraction Specification
 
 ## Purpose
-TBD - created by archiving change harden-metadata-extraction. Update Purpose after archive.
+Extracts metadata from PDF, image, OOXML, OLE, video, audio, font, and link
+families through a registry whose entries declare supported MIME values,
+extensions, signature probes, and a versioned envelope. Extraction is
+bounded by per-record byte, time, and format-specific expansion limits and
+records warnings rather than aborting the archive on partial failure.
 ## Requirements
 ### Requirement: Extractor registry
 The system SHALL select metadata extractors through a registry whose entries

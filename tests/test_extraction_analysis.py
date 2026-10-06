@@ -23,7 +23,7 @@ from metawarc.analysis import (
     resolve_stored_metadata_types,
     write_report,
 )
-from metawarc.cmds.extractor import (
+from metawarc.extractor import (
     ExtractionLimitError,
     ExtractionLimits,
     ExtractorRegistry,
@@ -236,7 +236,7 @@ def test_pdf_metadata_text_uses_pdf_encoding_rules(monkeypatch):
         def content_stream(self):
             return io.BytesIO(b"%PDF-1.4")
 
-    monkeypatch.setattr("metawarc.cmds.extractor.PDFDocument", lambda parser: Document())
+    monkeypatch.setattr("metawarc.extractor.PDFDocument", lambda parser: Document())
     envelope = extract_record(
         Record(),
         archive_id="archive",
@@ -286,8 +286,8 @@ def test_payload_timeout_corrupt_parser_and_temporary_cleanup():
 
 
 def test_content_index_expanded_metadata_groups(warc_factory, tmp_path: Path):
-    from metawarc.cmds.extractor import ContentIndexer
-    from metawarc.cmds.indexer import Indexer
+    from metawarc.extractor import ContentIndexer
+    from metawarc.indexer import Indexer
 
     with wave.open(output := io.BytesIO(), "wb") as audio:
         audio.setnchannels(1)
@@ -346,7 +346,7 @@ def test_content_index_expanded_metadata_groups(warc_factory, tmp_path: Path):
 
 
 def test_content_index_links_and_analysis_reports(indexed_workspace, tmp_path: Path):
-    from metawarc.cmds.extractor import ContentIndexer
+    from metawarc.extractor import ContentIndexer
 
     database, _ = indexed_workspace
     result = ContentIndexer(batch_size=1).index_by_table_type(
@@ -374,8 +374,8 @@ def test_content_index_links_and_analysis_reports(indexed_workspace, tmp_path: P
 
 
 def test_stored_metadata_analysis_types_rollups_filters_and_exports(warc_factory, tmp_path: Path):
-    from metawarc.cmds.extractor import ContentIndexer
-    from metawarc.cmds.indexer import Indexer
+    from metawarc.extractor import ContentIndexer
+    from metawarc.indexer import Indexer
 
     def document(title: str, creator: str) -> bytes:
         return ooxml_payload(
@@ -533,7 +533,7 @@ def test_record_update_retires_hash_sidecar(indexed_workspace):
         assert workspace.active_sidecars("hashes")
     from conftest import build_warc
 
-    from metawarc.cmds.indexer import Indexer
+    from metawarc.indexer import Indexer
 
     build_warc(source, [{"id": "<urn:uuid:new>", "payload": b"new"}])
     Indexer().index_records([source], str(database), mode="force", silent=True)
@@ -542,8 +542,8 @@ def test_record_update_retires_hash_sidecar(indexed_workspace):
 
 
 def test_link_graph_honors_base_tag(warc_factory, tmp_path: Path):
-    from metawarc.cmds.extractor import ContentIndexer
-    from metawarc.cmds.indexer import Indexer
+    from metawarc.extractor import ContentIndexer
+    from metawarc.indexer import Indexer
 
     source = warc_factory(
         "base.warc",
@@ -567,7 +567,7 @@ def test_link_graph_honors_base_tag(warc_factory, tmp_path: Path):
 
 
 def test_deep_integrity_resume_and_digest_observation(monkeypatch, warc_factory, tmp_path: Path):
-    from metawarc.cmds.indexer import Indexer
+    from metawarc.indexer import Indexer
 
     source = warc_factory(
         "digest.warc",

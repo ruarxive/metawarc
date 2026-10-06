@@ -7,7 +7,7 @@ from pathlib import Path
 from click.testing import CliRunner
 from fastapi.testclient import TestClient
 
-from metawarc.cmds.server import create_app
+from metawarc.api_server import create_app
 from metawarc.core import cli
 from metawarc.mcp_server import create_mcp
 from metawarc.settings import ServerSettings

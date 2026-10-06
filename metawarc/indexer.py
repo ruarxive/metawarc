@@ -17,8 +17,8 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from warcio import ArchiveIterator
 
-from ..progress import ProgressCallback, ProgressEvent, emit_progress
-from ..workspace import SourceFingerprint, Workspace, canonical_path, utc_now
+from .progress import ProgressCallback, ProgressEvent, emit_progress
+from .workspace import SourceFingerprint, Workspace, canonical_path, utc_now
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_BATCH_SIZE = 10_000
@@ -643,7 +643,7 @@ class Indexer:
         from rich.console import Console
         from rich.table import Table
 
-        from ..query import QueryService
+        from .query import QueryService
 
         dimension = "c_type" if mode == "mimes" else "ext" if mode == "exts" else None
         if dimension is None:

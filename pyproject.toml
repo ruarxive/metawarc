@@ -49,8 +49,10 @@ all = [
 ]
 dev = [
   "build>=1.2",
-  # TestClient for the FastAPI/starlette interface (starlette deprecates plain httpx).
-  # >=2.12 avoids PYSEC-2026-3844 through PYSEC-2026-3849.
+  # TestClient for the FastAPI/starlette interface. starlette 1.x does
+  # `import httpx2 as httpx` internally, so the dev extra must provide
+  # httpx2. The >=2.12 pin keeps us off httpx2 2.9.1, which carried six
+  # CVEs (PYSEC-2026-3844 through PYSEC-2026-3849).
   "httpx2>=2.12",
   "mypy>=1.11",
   "pip-audit>=2.7",

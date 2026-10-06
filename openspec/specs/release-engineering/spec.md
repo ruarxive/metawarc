@@ -1,7 +1,11 @@
 # release-engineering Specification
 
 ## Purpose
-TBD - created by archiving change consolidate-release-baseline. Update Purpose after archive.
+Designates one canonical branch as the source of released code,
+documentation, version metadata, CI configuration, and signed `vMAJOR.MINOR.PATCH`
+tags, and forbids moving existing tags. Every release declares the index
+schema versions it can read, migrate, rebuild, or reject, and its artifacts
+are built, installed, and smoke-tested from the tagged commit.
 ## Requirements
 ### Requirement: Canonical release source
 The project SHALL designate one default branch as the source of released code,

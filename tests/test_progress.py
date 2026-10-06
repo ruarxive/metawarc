@@ -9,9 +9,9 @@ from click.testing import CliRunner
 from rich.console import Console
 
 from metawarc.analysis import AnalysisService
-from metawarc.cmds.extractor import ContentIndexer
-from metawarc.cmds.indexer import Indexer
 from metawarc.core import cli
+from metawarc.extractor import ContentIndexer
+from metawarc.indexer import Indexer
 from metawarc.progress import ProgressEvent, RichProgressRenderer, resolve_progress
 from metawarc.workspace import Workspace
 

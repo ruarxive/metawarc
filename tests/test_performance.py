@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 
 from metawarc.analysis import AnalysisService
-from metawarc.cmds.extractor import ContentIndexer
-from metawarc.cmds.indexer import Indexer
+from metawarc.extractor import ContentIndexer
+from metawarc.indexer import Indexer
 from metawarc.workspace import Workspace
 
 

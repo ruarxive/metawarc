@@ -7,8 +7,8 @@ import duckdb
 import pyarrow.parquet as pq
 import pytest
 
-from metawarc.cmds.indexer import Indexer
 from metawarc.errors import SchemaCompatibilityError
+from metawarc.indexer import Indexer
 from metawarc.ingestion import IncrementalIngestor
 from metawarc.query import QueryService, RecordQuery
 from metawarc.workspace import Workspace, WorkspaceLockedError

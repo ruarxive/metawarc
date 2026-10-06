@@ -10,9 +10,9 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from metawarc.cmds.dump import Dumper, safe_record_token
-from metawarc.cmds.extractor import ContentIndexer, Extractor
-from metawarc.cmds.indexer import Indexer
+from metawarc.dump import Dumper, safe_record_token
+from metawarc.extractor import ContentIndexer, Extractor
+from metawarc.indexer import Indexer
 from metawarc.query import QueryService, RecordQuery
 from metawarc.workspace import Workspace
 

@@ -17,7 +17,7 @@ import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
 
-from .cmds.dump import iter_payload
+from .dump import iter_payload
 from .errors import WorkspaceError
 from .progress import ProgressCallback, ProgressEvent, emit_progress
 from .query import QueryService, RecordQuery

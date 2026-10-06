@@ -1,7 +1,10 @@
 # build-system Specification
 
 ## Purpose
-TBD - created by archiving change consolidate-release-baseline. Update Purpose after archive.
+Defines package metadata, dependencies, optional extras, and the entry point
+from a single authoritative `pyproject.toml`. CI builds and smoke-tests wheel
+and sdist artifacts in clean environments so the published closure matches
+the contributor install.
 ## Requirements
 ### Requirement: Single package metadata source
 The build system SHALL define package metadata, supported Python versions,

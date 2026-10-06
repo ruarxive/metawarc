@@ -1,7 +1,10 @@
 # collection-analysis Specification
 
 ## Purpose
-TBD - created by archiving change add-collection-analysis. Update Purpose after archive.
+Summarizes a versioned catalog: counts and bytes by MIME, extension, status,
+host, year, and top domains, plus revision-scoped metadata and link analysis
+reports. Every output identifies the workspace revision so consumers can
+detect changes between runs.
 ## Requirements
 ### Requirement: Revision-scoped reports
 Every collection analysis report SHALL identify the workspace catalog revision,

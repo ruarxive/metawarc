@@ -22,6 +22,18 @@ Report vulnerabilities privately through GitHub Security Advisories for
 `ruarxive/metawarc`. Do not include credentials or private archive contents in
 a public issue. See [security](/architecture/security).
 
+## Code of conduct
+
+All community spaces follow the
+[Contributor Covenant 2.1](https://github.com/ruarxive/metawarc/blob/master/CODE_OF_CONDUCT.md).
+Reports go to <ivan@begtin.tech>.
+
+## Support
+
+See [support](/development/support) for the recommended channel by topic
+(usage, bugs, security), response-time targets, and the compatibility
+policy. Repository copy: [SUPPORT.md](https://github.com/ruarxive/metawarc/blob/master/SUPPORT.md).
+
 ## Related tools
 
 - [undatum](https://github.com/datacoon/undatum) — CLI for multiformat data processing

@@ -84,7 +84,7 @@ def warc_factory(tmp_path: Path):
 
 @pytest.fixture
 def indexed_workspace(tmp_path: Path, warc_factory):
-    from metawarc.cmds.indexer import Indexer
+    from metawarc.indexer import Indexer
 
     source = warc_factory()
     database = tmp_path / "collection.db"

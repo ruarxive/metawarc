@@ -1,7 +1,12 @@
 # website-replay Specification
 
 ## Purpose
-TBD - created by archiving change add-website-replay. Update Purpose after archive.
+Serves local Wayback-style replay of indexed captures: a host index at
+`/`, an exact-URL capture route at `/replay/<stamp>/<url>` that selects the
+closest or exact-timestamp match from the catalog, and identity-mode and
+rewritten-mode variants that preserve the original charset so non-ASCII
+content renders correctly. JavaScript rewriting is explicitly out of scope
+and the service defers full Wombat/JS fidelity to pywb via CDXJ export.
 ## Requirements
 ### Requirement: Replay home navigation
 The serve application SHALL provide an HTML home page that lists archived

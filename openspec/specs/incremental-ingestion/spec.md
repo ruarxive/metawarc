@@ -1,7 +1,10 @@
 # incremental-ingestion Specification
 
 ## Purpose
-TBD - created by archiving change add-incremental-ingestion. Update Purpose after archive.
+Adds new sources to an existing workspace without rescanning unchanged
+inputs. The `ingest` command classifies requested sources as add, unchanged,
+update, missing, moved candidate, or conflict before any mutation, and a
+moved source is never silently rebound.
 ## Requirements
 ### Requirement: Incremental source planning
 Before mutation, an incremental run SHALL classify requested sources as add,

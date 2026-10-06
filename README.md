@@ -154,8 +154,9 @@ explicit acknowledgement.
 
 See the [documentation site](https://ruarxive.org/metawarc/) for
 architecture, CLI reference, replay, and release guidance. Repository copies:
-[security](SECURITY.md), [changelog](CHANGELOG.md), and
-[contributing](CONTRIBUTING.md).
+[security](SECURITY.md), [changelog](CHANGELOG.md),
+[contributing](CONTRIBUTING.md),
+[code of conduct](CODE_OF_CONDUCT.md), and [support](SUPPORT.md).
 
 ## Compatibility
 

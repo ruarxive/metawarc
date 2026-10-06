@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
 
-from .cmds.indexer import Indexer, IndexSummary
+from .indexer import Indexer, IndexSummary
 from .progress import ProgressCallback
 from .workspace import SourceFingerprint, Workspace, canonical_path, utc_now
 
