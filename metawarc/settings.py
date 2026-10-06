@@ -39,6 +39,8 @@ class ServerSettings:
     max_payload_bytes: int = 128 * 1024 * 1024
     request_timeout_seconds: int = 30
     max_concurrency: int = 16
+    job_max_concurrent: int = 4
+    job_timeout_seconds: int = 300
 
     @classmethod
     def from_env(cls) -> ServerSettings:
@@ -53,6 +55,8 @@ class ServerSettings:
             max_payload_bytes=env_int("METAWARC_MAX_PAYLOAD_BYTES", 128 * 1024 * 1024),
             request_timeout_seconds=env_int("METAWARC_REQUEST_TIMEOUT", 30),
             max_concurrency=env_int("METAWARC_MAX_CONCURRENCY", 16),
+            job_max_concurrent=env_int("METAWARC_JOB_MAX_CONCURRENT", 4),
+            job_timeout_seconds=env_int("METAWARC_JOB_TIMEOUT", 300),
         )
 
 

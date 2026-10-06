@@ -6,6 +6,8 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from .jobs import EXPORT_FORMATS, EXPORT_HARD_LIMIT
+
 
 class ErrorResponse(BaseModel):
     detail: str
@@ -74,11 +76,66 @@ class SearchResponse(BaseModel):
     hits: list[SearchHit]
 
 
+class JobRequest(BaseModel):
+    """Submit a new job. Only ``export-records`` is registered for the MVP."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: str = Field(description="Job kind name (`export-records`).")
+    format: str | None = Field(default=None, description="Export format.")
+    limit: int | None = Field(default=None, ge=1, le=EXPORT_HARD_LIMIT)
+    filters: dict[str, Any] = Field(default_factory=dict)
+
+    def job_input(self) -> dict[str, Any]:
+        if self.kind == "export-records":
+            if self.format is not None and self.format not in EXPORT_FORMATS:
+                raise ValueError(
+                    f"Unsupported export format {self.format!r}; "
+                    f"choose from {', '.join(EXPORT_FORMATS)}"
+                )
+            return {
+                "format": self.format or "json",
+                "limit": self.limit,
+                "filters": self.filters,
+            }
+        raise ValueError(f"Unsupported job kind {self.kind!r}")
+
+
+class JobResponse(BaseModel):
+    id: str
+    kind: str
+    status: str
+    input: dict[str, Any] = Field(default_factory=dict)
+    result: dict[str, Any] = Field(default_factory=dict)
+    error: str | None = None
+    created_at: str
+    started_at: str | None = None
+    ended_at: str | None = None
+
+
+class JobListResponse(BaseModel):
+    total: int
+    items: list[JobResponse]
+
+
+class JobResultResponse(BaseModel):
+    job_id: str
+    status: str
+    path: str
+    format: str
+    rows: int
+    size: int
+
+
 __all__ = [
     "ArchiveResponse",
     "ErrorResponse",
     "HeaderResponse",
     "HealthResponse",
+    "JobListResponse",
+    "JobRequest",
+    "JobResponse",
+    "JobResultResponse",
     "MessageResponse",
     "RecordPage",
     "RecordResponse",

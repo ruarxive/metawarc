@@ -13,6 +13,7 @@ import click
 
 from . import __version__
 from .analysis import STORED_METADATA_TYPES, AnalysisReport, AnalysisService, write_report
+from .cli_jobs import jobs_group
 from .dump import Dumper
 from .errors import MetawarcError
 from .extractor import ContentIndexer
@@ -225,6 +226,9 @@ def cli(verbose: bool) -> None:
     # Logging configuration is owned by :mod:`metawarc.__main__` so library
     # callers that import ``metawarc`` are not silently reconfigured.
     del verbose
+
+
+cli.add_command(jobs_group)
 
 
 @cli.command("index")
@@ -1054,6 +1058,8 @@ def _run_serve(
         max_payload_bytes=defaults.max_payload_bytes,
         request_timeout_seconds=defaults.request_timeout_seconds,
         max_concurrency=defaults.max_concurrency,
+        job_max_concurrent=defaults.job_max_concurrent,
+        job_timeout_seconds=defaults.job_timeout_seconds,
     )
     try:
         import uvicorn

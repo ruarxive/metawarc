@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import pathlib
 import secrets
 import uuid
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, Request, Response
@@ -17,6 +20,10 @@ from .api_models import (
     ErrorResponse,
     HeaderResponse,
     HealthResponse,
+    JobListResponse,
+    JobRequest,
+    JobResponse,
+    JobResultResponse,
     RecordPage,
     RecordResponse,
     SearchHit,
@@ -24,6 +31,7 @@ from .api_models import (
 )
 from .dump import iter_payload, safe_record_token
 from .errors import QueryValidationError, WorkspaceError
+from .jobs import Job, JobKind, JobRunner, JobStatus, JobStore
 from .query import QueryService, RecordQuery
 from .replay import ReplayError, ReplayService, replay_url, wayback_timestamp
 from .settings import ServerSettings
@@ -35,10 +43,32 @@ LOGGER = logging.getLogger("metawarc.api")
 def create_app(settings: ServerSettings | None = None) -> FastAPI:
     """Create a REST app without mutating module-global database settings."""
     config = settings or ServerSettings.from_env()
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        runner: JobRunner | None = None
+        try:
+            data_dir = config.data_dir or str(pathlib.Path(config.db_path).with_suffix(".data"))
+            store = JobStore(data_dir)
+            runner = JobRunner(store, settings=config)
+            await runner.start_background()
+            app.state.job_runner = runner
+            LOGGER.info(
+                "job runner started data_dir=%s max_concurrent=%s timeout=%s",
+                data_dir,
+                config.job_max_concurrent,
+                config.request_timeout_seconds,
+            )
+            yield
+        finally:
+            if runner is not None:
+                await runner.stop_background()
+
     app = FastAPI(
         title="Metawarc API",
         description="Read-only typed access to a versioned WARC index workspace.",
         version=__version__,
+        lifespan=lifespan,
     )
     semaphore = asyncio.Semaphore(config.max_concurrency)
 
@@ -289,6 +319,120 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
             ],
         )
 
+    @app.post(
+        "/jobs",
+        response_model=JobResponse,
+        status_code=201,
+        responses={401: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+    )
+    async def submit_job(
+        payload: JobRequest,
+        response: Response,
+        _: None = Depends(authorize),
+    ) -> JobResponse:
+        runner: JobRunner = app.state.job_runner
+        try:
+            kind = JobKind(payload.kind)
+            job_input = payload.job_input()
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        job = runner.submit(kind, job_input)
+        response.headers["Location"] = f"/jobs/{job.id}"
+        return _job_to_response(job)
+
+    @app.get(
+        "/jobs",
+        response_model=JobListResponse,
+        responses={401: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+    )
+    async def list_jobs(
+        status: Annotated[
+            str | None,
+            Query(description=f"One of {', '.join(JobStatus.values())}"),
+        ] = None,
+        limit: Annotated[int, Query(ge=1, le=ServerSettings.from_env().max_page)] = 50,
+        _: None = Depends(authorize),
+    ) -> JobListResponse:
+        if status is not None and status not in JobStatus.values():
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unsupported status {status!r}; choose from {', '.join(JobStatus.values())}",
+            )
+        runner: JobRunner = app.state.job_runner
+        items = [_job_to_response(item) for item in runner.list_jobs(status=status, limit=limit)]
+        return JobListResponse(total=len(items), items=items)
+
+    @app.get(
+        "/jobs/{job_id}",
+        response_model=JobResponse,
+        responses={401: {"model": ErrorResponse}, 404: {"model": ErrorResponse}},
+    )
+    async def get_job(
+        job_id: Annotated[str, Path(description="Job id (returned by POST /jobs)")],
+        _: None = Depends(authorize),
+    ) -> JobResponse:
+        runner: JobRunner = app.state.job_runner
+        job = runner.get(job_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail="Job not found")
+        return _job_to_response(job)
+
+    @app.get(
+        "/jobs/{job_id}/result",
+        response_model=JobResultResponse,
+        responses={
+            401: {"model": ErrorResponse},
+            404: {"model": ErrorResponse},
+            409: {"model": ErrorResponse},
+        },
+    )
+    async def get_job_result(
+        job_id: Annotated[str, Path(description="Job id (returned by POST /jobs)")],
+        _: None = Depends(authorize),
+    ) -> JobResultResponse:
+        runner: JobRunner = app.state.job_runner
+        job = runner.get(job_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail="Job not found")
+        if job.status != JobStatus.SUCCEEDED.value:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Job is {job.status}; result is only available when succeeded",
+            )
+        result = job.result or {}
+        return JobResultResponse(
+            job_id=job.id,
+            status=job.status,
+            path=str(result.get("path", "")),
+            format=str(result.get("format", "")),
+            rows=int(result.get("rows", 0)),
+            size=int(result.get("size", 0)),
+        )
+
+    @app.delete(
+        "/jobs/{job_id}",
+        response_model=JobResponse,
+        responses={
+            401: {"model": ErrorResponse},
+            404: {"model": ErrorResponse},
+            409: {"model": ErrorResponse},
+        },
+    )
+    async def cancel_job(
+        job_id: Annotated[str, Path(description="Job id (returned by POST /jobs)")],
+        _: None = Depends(authorize),
+    ) -> JobResponse:
+        runner: JobRunner = app.state.job_runner
+        try:
+            job = runner.cancel(job_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Job not found") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        if job is None:
+            raise HTTPException(status_code=404, detail="Job not found")
+        return _job_to_response(job)
+
     def _replay_home(_: None = Depends(authorize)) -> Response:
         with Workspace(
             config.db_path, data_dir=config.data_dir, read_only=True, create=False
@@ -379,6 +523,20 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
             )
 
     return app
+
+
+def _job_to_response(job: Job) -> JobResponse:
+    return JobResponse(
+        id=job.id,
+        kind=job.kind,
+        status=job.status,
+        input=job.input,
+        result=job.result,
+        error=job.error,
+        created_at=job.created_at,
+        started_at=job.started_at,
+        ended_at=job.ended_at,
+    )
 
 
 __all__ = ["create_app"]

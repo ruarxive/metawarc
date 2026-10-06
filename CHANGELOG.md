@@ -25,6 +25,17 @@ All notable changes to this project are documented in this file.
   that wrap `AnalysisService.summary()` and
   `AnalysisService.stored_metadata()` over the existing allowlist
   and pagination discipline.
+- Authenticated, durable batch-job API: `POST/GET/DELETE /jobs` on
+  `metawarc serve`, `metawarc jobs submit|list|get|wait|cancel`
+  CLI subcommand, and a JSON-file backed `JobRunner` started from
+  FastAPI's lifespan handler. The MVP ships the `export-records`
+  job kind, which materialises the result of
+  `QueryService.list_records` to JSON, CSV, or Parquet. Job state
+  persists across restarts; execution is bounded by
+  `METAWARC_JOB_MAX_CONCURRENT` (default 4) and
+  `METAWARC_JOB_TIMEOUT` (default 300s); bearer-token discipline
+  is inherited from the existing `/records` and `/replay`
+  endpoints.
 
 ## 2.0.2 (2026-10-06)
 

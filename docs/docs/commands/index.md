@@ -61,5 +61,6 @@ and require `--apply` where removal is involved.
 | `serve` | `api` or `replay` | [`/commands/serve`](/commands/serve) |
 | `replay` | `api` or `replay` | [`/commands/replay`](/commands/replay) |
 | `mcp` | `mcp` | [`/commands/mcp`](/commands/mcp) |
+| `jobs` | none (uses the workspace's `data/jobs/` directory) | [`/commands/jobs`](/commands/jobs) |
 
 Global flags: `--verbose` / `-v`, `--version`, `-h` / `--help`.
