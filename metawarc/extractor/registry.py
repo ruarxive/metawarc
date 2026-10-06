@@ -23,6 +23,9 @@ from .media import (
 )
 from .office import OoxmlExtractor
 from .pdf import PdfExtractor
+from .text import TextExtractor
+from .text_ooxml import OoxmlTextExtractor
+from .text_pdf import PdfTextExtractor
 
 
 class ExtractorRegistry:
@@ -38,7 +41,9 @@ class ExtractorRegistry:
         )
         defaults: list[MetadataExtractor] = [
             PdfExtractor(),
+            PdfTextExtractor(),
             OoxmlExtractor(),
+            OoxmlTextExtractor(),
             SvgExtractor(),
             WebpExtractor(),
             HachoirExtractor(
@@ -71,6 +76,7 @@ class ExtractorRegistry:
                 lambda prefix: prefix.startswith(b"\xd0\xcf\x11\xe0"),
             ),
             LinkExtractor(),
+            TextExtractor(),
         ]
         self.extractors: list[MetadataExtractor] = (
             list(extractors) if extractors is not None else defaults

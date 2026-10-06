@@ -62,6 +62,8 @@ from .pdf import PdfExtractor, decode_pdf_metadata_text
 from .record import Extractor, extract_record, processWarcRecord, read_payload_limited
 from .registry import DEFAULT_REGISTRY, ExtractorRegistry
 from .text import TextExtractor
+from .text_ooxml import OoxmlTextExtractor
+from .text_pdf import PdfTextExtractor
 
 
 def __getattr__(name: str) -> object:
@@ -92,6 +94,8 @@ __all__ = [
     "OoxmlExtractor",
     "PdfExtractor",
     "SvgExtractor",
+    "OoxmlTextExtractor",
+    "PdfTextExtractor",
     "TextExtractor",
     "WebpExtractor",
     "_audio_probe",
