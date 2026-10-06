@@ -236,7 +236,7 @@ def test_pdf_metadata_text_uses_pdf_encoding_rules(monkeypatch):
         def content_stream(self):
             return io.BytesIO(b"%PDF-1.4")
 
-    monkeypatch.setattr("metawarc.extractor.PDFDocument", lambda parser: Document())
+    monkeypatch.setattr("metawarc.extractor.pdf.PDFDocument", lambda parser: Document())
     envelope = extract_record(
         Record(),
         archive_id="archive",
