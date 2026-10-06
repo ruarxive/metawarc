@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented in this file.
 
-## 2.0.2 (2026-09-18)
+## 2.0.2 (2026-10-06)
 
 ### Fixed
 
@@ -10,6 +10,14 @@ All notable changes to this project are documented in this file.
   record timestamps on a fresh install.
 - Align `requirements.txt` with the authoritative `pyproject.toml` dependency
   set (adds `pytz` and `fonttools[woff]`).
+- Clear 17 transitive vulnerabilities in the dev closure:
+  - `pyjwt` 2.13.0 → 2.15.1 (14 CVEs)
+  - `urllib3` 2.7.0 → 2.8.0 (3 CVEs)
+- Tighten `metawarc.settings.is_loopback` to use
+  `ipaddress.ip_address(...).is_loopback` so every canonical IPv4 and
+  IPv6 loopback representation (including the IPv6 long form
+  `0:0:0:0:0:0:0:1`) is recognised before deciding whether the configured
+  bind requires authentication.
 
 ### Changed
 
@@ -17,13 +25,45 @@ All notable changes to this project are documented in this file.
   tree; they were already excluded from built distributions.
 - Pin the `httpx2` development dependency to `>=2.12`; previously resolved
   2.9.1 carried six known CVEs (PYSEC-2026-3844 through PYSEC-2026-3849).
-  `pip-audit` is clean again.
-- Modernize GitHub Actions (v7), support Python 3.10–3.13 CI matrix, and add
-  a macOS test runner.
+- Modernize GitHub Actions (v7), support Python 3.10–3.13 CI matrix, add a
+  macOS test runner, and add a `windows-latest` Python 3.13 matrix entry.
+- Add `pip-audit` to the `test` job so the contributor-path closure is
+  audited in the same job that exercises the tests.
+- Add a per-module coverage gate of 70 % for every public surface
+  (`metawarc.indexer`, `metawarc.api_server`, `metawarc.dump`,
+  `metawarc.mcp_server`); the indexer gate previously applied only to a
+  subset of the test suite.
 - Publish the Docusaurus documentation site and retarget repository URLs
   after the move to the `ruarxive` organization.
 - Archive all completed OpenSpec changes; `openspec/specs/` now holds the
-  shipped 2.x capability requirements.
+  shipped 2.x capability requirements with a non-placeholder Purpose
+  paragraph for every spec.
+- Add `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1) and `SUPPORT.md`;
+  link them from the README and the docs site.
+- Flatten the `metawarc.cmds/` package to the package top level; every
+  command module (`dump`, `indexer`, `api_server`, `extractor`) now
+  lives at the top level alongside `analysis`, `replay`, `mcp_server`,
+  and `ingestion`.
+- Extract `metawarc.reporting.py` (95 LOC) as the dedicated presentation
+  module so command-group wiring in `core.py` no longer mixes Rich-table
+  and JSON rendering into the control flow.
+- Move `logging.basicConfig` from `metawarc.core.cli()` to
+  `metawarc.__main__` so library consumers retain control of their
+  logger configuration.
+- Split the 1 389-LOC `metawarc/extractor.py` into a per-format package
+  (`metawarc/extractor/{__init__,envelope,pdf,office,links,media,
+  registry,record,indexer}.py`); backward-compatible re-exports
+  preserve the public API and the `metawarc.extractor.PDFDocument`
+  symbol.
+
+### Added
+
+- 23 cases in `tests/test_settings.py` covering the loopback helper.
+- 13 cases in `tests/test_server_auth.py` for the bearer-token surface
+  (loopback vs non-loopback bind, malformed `Authorization` headers,
+  replay-route coverage).
+- 4 cases in `tests/test_module_entry.py` for the
+  `python -m metawarc --version` / `--help` smoke.
 
 ## 2.0.1 (2026-08-08)
 
