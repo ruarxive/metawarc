@@ -68,6 +68,7 @@ def __getattr__(name: str) -> object:
         return _PDFDocument
     raise AttributeError(name)
 
+
 __all__ = [
     "ContentIndexer",
     "DEFAULT_EXTRACTION_LIMITS",
