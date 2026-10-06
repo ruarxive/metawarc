@@ -4,16 +4,26 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+## 2.0.3 (2026-10-06)
+
 ### Added
 
 - `metawarc.extractor.text.TextExtractor` strips HTML, scripts, and
   style blocks via BeautifulSoup and emits a bounded plain-text blob
   under `ExtractionLimits`.
+- `metawarc.extractor.text_pdf.PdfTextExtractor` and
+  `metawarc.extractor.text_ooxml.OoxmlTextExtractor` project PDF and
+  OOXML response bodies into the shared `texts` Parquet sidecar
+  via `pdfminer.high_level.extract_text` and `lxml` over
+  `word/document.xml`.
 - `metawarc search <phrase> [--limit N]` CLI subcommand for
   phrase-search over the indexed `texts` sidecar.
 - `Workspace.search_text(phrase, limit=50)` method backed by a Parquet
   columnar scan over the `texts` sidecar (DuckDB's FTS extension
   regressed in 1.5.x so a columnar scan is the dependable backend).
+- `ContentIndexer.index_texts()` opt-in path plus the
+  `metawarc content-index --text` CLI flag — populates the `texts`
+  sidecar from real WARCs without requiring a manual FTS rebuild.
 - `GET /records/search?phrase=<text>&limit=<n>` REST endpoint with the
   same bearer-token discipline as `/warcs/list`.
 - `search_records` MCP tool that calls `Workspace.search_text` and
@@ -36,6 +46,20 @@ All notable changes to this project are documented in this file.
   `METAWARC_JOB_TIMEOUT` (default 300s); bearer-token discipline
   is inherited from the existing `/records` and `/replay`
   endpoints.
+
+### Changed
+
+- Per-format `metawarc/extractor/` package split: the 1389-LOC
+  `metawarc.extractor` module is reorganised as a registry of
+  per-format files (`envelope`, `pdf`, `office`, `links`, `media`,
+  `record`, `text`, `text_pdf`, `text_ooxml`, `indexer`,
+  `registry`). The `metawarc.cmds.*` namespace is removed; the old
+  import paths are kept working via `__getattr__` re-exports.
+- OpenSpec roadmap aligned with shipped surface: the
+  `metadata-extraction`, `record-query`, `index-workspace`, and
+  `remote-interfaces` capability specs now describe the search and
+  batch-job features; the deferred list drops full-text search,
+  richer MCP surface, and authenticated batch-job API.
 
 ## 2.0.2 (2026-10-06)
 

@@ -6,7 +6,7 @@ import re
 import subprocess
 import sys
 
-PACKAGE_VERSION = "2.0.2"
+PACKAGE_VERSION = "2.0.3"
 
 
 def _run_module(*args: str) -> subprocess.CompletedProcess[str]:
