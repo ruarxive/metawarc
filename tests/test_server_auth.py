@@ -16,6 +16,7 @@ PROTECTED_PATHS = (
     "/health",
     "/warcs/list",
     "/records/list",
+    "/records/search",
 )
 
 
@@ -28,7 +29,8 @@ def test_unauthenticated_request_returns_401(indexed_workspace) -> None:
     database, _ = indexed_workspace
     with TestClient(create_app(_settings(database, token="secret"))) as client:
         for path in PROTECTED_PATHS:
-            response = client.get(path)
+            params = {"phrase": "museum"} if path == "/records/search" else {}
+            response = client.get(path, params=params)
             assert response.status_code == 401, path
             assert "bearer" in response.json()["detail"].lower()
 
@@ -38,7 +40,8 @@ def test_wrong_token_returns_401(indexed_workspace) -> None:
     database, _ = indexed_workspace
     with TestClient(create_app(_settings(database, token="secret"))) as client:
         for path in PROTECTED_PATHS:
-            response = client.get(path, headers={"Authorization": "Bearer not-the-secret"})
+            params = {"phrase": "museum"} if path == "/records/search" else {}
+            response = client.get(path, params=params, headers={"Authorization": "Bearer not-the-secret"})
             assert response.status_code == 401, path
 
 
@@ -47,7 +50,8 @@ def test_correct_token_is_accepted(indexed_workspace) -> None:
     database, _ = indexed_workspace
     with TestClient(create_app(_settings(database, token="secret"))) as client:
         for path in PROTECTED_PATHS:
-            response = client.get(path, headers={"Authorization": "Bearer secret"})
+            params = {"phrase": "museum"} if path == "/records/search" else {}
+            response = client.get(path, params=params, headers={"Authorization": "Bearer secret"})
             assert response.status_code == 200, path
 
 
@@ -56,7 +60,8 @@ def test_no_token_means_no_authentication(indexed_workspace) -> None:
     database, _ = indexed_workspace
     with TestClient(create_app(_settings(database, token=None))) as client:
         for path in PROTECTED_PATHS:
-            response = client.get(path)
+            params = {"phrase": "museum"} if path == "/records/search" else {}
+            response = client.get(path, params=params)
             assert response.status_code == 200, path
 
 

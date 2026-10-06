@@ -86,6 +86,20 @@ def create_mcp(dbfile: str = "warcindex.db", data_dir: str | None = None) -> Any
         with Workspace(dbfile, data_dir=data_dir, read_only=True, create=False) as ws:
             return _serializable(QueryService(ws).get_headers(archive_id, record_id))
 
+    @server.tool
+    def search_records(phrase: str, limit: int = 50) -> dict[str, Any]:
+        """Phrase-search across the indexed ``texts`` sidecar.
+
+        Empty phrases and ``limit`` higher than ``METAWARC_MAX_PAGE``
+        are rejected with a tool error. Returns a dict shaped
+        ``{phrase, limit, total, hits}`` where each ``hit`` carries
+        ``archive_id``, ``warc_id``, ``source``, ``url``, and a
+        ``snippet`` of the matched text.
+        """
+        with Workspace(dbfile, data_dir=data_dir, read_only=False, create=False) as ws:
+            rows = ws.search_text(phrase, limit=limit)
+        return _serializable({"phrase": phrase, "limit": limit, "total": len(rows), "hits": rows})
+
     return server
 
 

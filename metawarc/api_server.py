@@ -19,6 +19,8 @@ from .api_models import (
     HealthResponse,
     RecordPage,
     RecordResponse,
+    SearchHit,
+    SearchResponse,
 )
 from .dump import iter_payload, safe_record_token
 from .errors import QueryValidationError, WorkspaceError
@@ -252,6 +254,39 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
             iter_payload(record, max_bytes=config.max_payload_bytes),
             media_type=record.get("content_type") or "application/octet-stream",
             headers=headers,
+        )
+
+    @app.get(
+        "/records/search",
+        response_model=SearchResponse,
+        responses={400: {"model": ErrorResponse}},
+    )
+    def search_records(
+        phrase: Annotated[str, Query(min_length=1, max_length=512)],
+        limit: Annotated[int, Query(ge=1, le=ServerSettings.from_env().max_page)] = 50,
+        _: None = Depends(authorize),
+    ) -> SearchResponse:
+        with Workspace(
+            config.db_path, data_dir=config.data_dir, read_only=False, create=False
+        ) as ws:
+            try:
+                rows = ws.search_text(phrase, limit=limit)
+            except ValueError as exc:
+                raise HTTPException(status_code=400, detail=str(exc)) from exc
+        return SearchResponse(
+            phrase=phrase,
+            limit=limit,
+            total=len(rows),
+            hits=[
+                SearchHit(
+                    archive_id=str(row["archive_id"]),
+                    warc_id=str(row["warc_id"]),
+                    source=str(row["source"]),
+                    url=str(row["url"]),
+                    snippet=str(row["snippet"]),
+                )
+                for row in rows
+            ],
         )
 
     def _replay_home(_: None = Depends(authorize)) -> Response:

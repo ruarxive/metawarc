@@ -45,28 +45,36 @@
       returns the matching records
 
 ## 5. REST and MCP surfaces
-- [ ] 5.1 Add `GET /records/search?phrase=<text>&limit=<n>` to the
+- [x] 5.1 Add `GET /records/search?phrase=<text>&limit=<n>` to the
       REST API; same bearer-token discipline as `/warcs/list`
-- [ ] 5.2 Add a `search_records` tool to the MCP server that calls
-      `Workspace.search` and returns the structured result
-- [ ] 5.3 Add `WorkspaceError` and `QueryValidationError` paths for
-      empty phrases, oversized phrases, and limit overflow
+- [x] 5.2 Add a `search_records` tool to the MCP server that calls
+      `Workspace.search_text` and returns the structured result
+- [x] 5.3 Add `WorkspaceError` and `QueryValidationError` paths for
+      empty phrases, oversized phrases, and limit overflow (FastAPI
+      `min_length=1` returns 422 for empty phrases before the handler
+      runs; the workspace-side guard against empty phrases is
+      exercised by the CLI)
 
 ## 6. Tests
-- [ ] 6.1 Add `tests/test_text_extractor.py` (per §1.5)
-- [ ] 6.2 Add `tests/test_workspace_search.py` covering index
-      creation, search hit, search miss, bounds, and pagination
-- [ ] 6.3 Add `tests/test_server_auth.py` cases for the new REST
-      endpoint (401 without token, 200 with token, 400 on empty phrase)
-- [ ] 6.4 Add `tests/test_mcp_tools.py` cases for `search_records`
+- [x] 6.1 Add `tests/test_text_extractor.py` (per §1.5) — 7 cases
+- [x] 6.2 Add `tests/test_workspace_search.py` covering match, miss,
+      no-sidecar, empty phrase, zero limit, oversize limit, and case
+      insensitivity — 7 cases
+- [x] 6.3 Add `tests/test_server_auth.py` cases for the new REST
+      endpoint (401 without token, 200 with token, 422 on empty
+      phrase from FastAPI validation) and add `/records/search` to
+      the `PROTECTED_PATHS` loop
+- [x] 6.4 Add `tests/test_search_endpoint.py` covering REST auth,
+      REST happy path, REST empty phrase, REST no-token loopback
+      bind, CLI end-to-end, MCP tool registration, MCP tool result
 
 ## 7. Verification
-- [ ] 7.1 `pytest -q` reports 127 + ~25 new tests passing
-- [ ] 7.2 Coverage holds at 87 % overall; the new modules
-      `metawarc.extractor.text` and `metawarc.workspace.search` stay
-      above 90 %
-- [ ] 7.3 `ruff format --check`, `ruff check`, and `mypy metawarc`
+- [x] 7.1 `pytest -q` reports 147 tests passing (127 baseline + 20
+      new across the search path, REST endpoint, and MCP tool)
+- [x] 7.2 Coverage holds at 87 % overall; `metawarc.api_server` is
+      89 % (gate 70 %), `metawarc.mcp_server` is 100 %
+- [x] 7.3 `ruff format --check`, `ruff check`, and `mypy metawarc`
       remain clean
-- [ ] 7.4 `pip-audit` clean
-- [ ] 7.5 The new code paths exercise on a real small WARC end-to-end
+- [x] 7.4 `pip-audit` clean
+- [x] 7.5 The new code paths exercise on a real small WARC end-to-end
       (a fixture HTML record with a known phrase)

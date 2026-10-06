@@ -59,6 +59,21 @@ class MessageResponse(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
 
 
+class SearchHit(BaseModel):
+    archive_id: str
+    warc_id: str
+    source: str
+    url: str
+    snippet: str
+
+
+class SearchResponse(BaseModel):
+    phrase: str
+    limit: int
+    total: int
+    hits: list[SearchHit]
+
+
 __all__ = [
     "ArchiveResponse",
     "ErrorResponse",
@@ -67,4 +82,6 @@ __all__ = [
     "MessageResponse",
     "RecordPage",
     "RecordResponse",
+    "SearchHit",
+    "SearchResponse",
 ]
