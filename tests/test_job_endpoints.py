@@ -214,7 +214,7 @@ def test_jobs_result_ignores_external_path_when_internal_file_exists(jobs_app, t
     external = tmp_path / "external.json"
     external.write_text("secret", encoding="utf-8")
     internal = store.result_path(job, ".json")
-    internal.write_text("[]\n", encoding="utf-8")
+    internal.write_bytes(b"[]\n")
     job.result["path"] = str(external)
     store.save(job)
 
