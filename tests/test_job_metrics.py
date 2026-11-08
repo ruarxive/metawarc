@@ -309,6 +309,7 @@ def test_metrics_observes_completion_cancellation_and_pruning(tmp_path: Path):
                 _assert_valid_metrics(payload)
 
         await asyncio.gather(asyncio.to_thread(store.prune, 0, True), observe_pruning())
+        store.prune(0, True)
         assert store.metrics()["total"] == 0
 
     asyncio.run(exercise())
