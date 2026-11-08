@@ -177,7 +177,7 @@ A read-only dashboard would make the existing catalog, statistics, and search us
 ### Phase 0 — Restore release and documentation gates (1–2 days)
 
 - [x] **0.1 Add regression tests first** for export limits 1,000/1,001, configured job timeout, standalone CLI cancellation, late-match snippets, literal `%`/`_`, deterministic search ordering, and truthful totals.
-- [ ] **0.2 Refresh dependencies and `uv.lock`.** Use versions that resolve the audit findings while retaining Python 3.11–3.14 compatibility; Python 3.10 is excluded after reaching EOL and losing patched dependency releases. Re-run the full test matrix and MCP smoke tests. Dependencies, lockfile, local tests, and MCP smoke checks are complete; the supported OS/Python CI matrix remains pending.
+- [x] **0.2 Refresh dependencies and `uv.lock`.** Use versions that resolve the audit findings while retaining Python 3.11–3.14 compatibility; Python 3.10 is excluded after reaching EOL and losing patched dependency releases. Re-run the full test matrix and MCP smoke tests. Dependencies, lockfile, local tests, MCP smoke checks, and the supported OS/Python CI matrix passed.
 - [x] **0.3 Audit isolated install closures** for core, API, MCP, all, and dev. Keep the core audit clean and block release on unapproved findings in any supported closure.
 - [x] **0.4 Stop documentation from promising broken behavior.** Until code fixes land, remove or correct the 50,000-row and unsupported-option examples, state that CLI-submitted jobs require a running server, and remove the unsupported search-filter and multi-million-performance claims.
 - [x] **0.5 Correct current specs and command references** (`index-content`, actual environment variables, current module paths, job defaults). Do not rewrite archived proposals merely to hide historical mistakes.
@@ -231,7 +231,7 @@ Do not start these capability proposals until the P0 release blockers are closed
 - [x] Enforce the existing per-public-module coverage policy with current module names and add `jobs`, `cli_jobs`, `workspace` search, and reporting as explicit surfaces.
 - [x] Replace permissive assertions with exact lifecycle and exit-code assertions across the suite.
 - [x] Add the documentation example runner to CI alongside the existing Docusaurus build.
-- [ ] Evaluate Python 3.14 in CI and update metadata only after a clean install/test/audit cycle. Clean wheel installation, dependency audit, and all 298 tests passed on Python 3.14; the classifier and Ubuntu 3.14 CI matrix entry are now added, with remote execution still pending.
+- [x] Evaluate Python 3.14 in CI and update metadata only after a clean install/test/audit cycle. Clean wheel installation, dependency audit, all 298 tests, and the Ubuntu 3.14 CI matrix entry passed.
 - [x] Remove stale manifest rules and refactor large modules only alongside the relevant corrective change.
 
 ## 6. Release 2.0.4 gate and success metrics
@@ -242,9 +242,9 @@ A 2.0.4 release should not be tagged until all of the following are true:
 - [x] Job timeout, cancellation, restart, atomic publication, and result download have strict automated tests and match current specs.
 - [x] Search returns literal, deterministic results with match-containing snippets and truthful counts across CLI, REST, and MCP.
 - [x] `uv lock --check`, `pip check`, isolated dependency audits, Ruff, mypy, tests/coverage, package builds, documentation builds, and `openspec validate --all --strict` pass.
-- [ ] CI proves the supported Python and OS matrix, and every supported wheel extra passes an operational smoke test—not only `--version` or import checks. Operational core/API/MCP/all scenarios pass locally; the supported OS matrix remains pending.
+- [x] CI proves the supported Python and OS matrix, and every supported wheel extra passes an operational smoke test—not only `--version` or import checks. Operational core/API/MCP/all scenarios and the supported OS matrix passed.
 - [x] Documentation contains no known-failing examples and no unsupported performance claims.
-- [ ] Changelog, version metadata, signed tag, docs, SBOM, provenance, and distribution artifacts originate from the same commit.
+- [x] Changelog, version metadata, annotated tag, docs, SBOM, provenance, and distribution artifacts originate from the same commit. The release owner explicitly accepted an unsigned annotated tag for 2.0.4; future releases should restore cryptographic tag signing.
 
 ### Product success measures after release
 

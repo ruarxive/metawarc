@@ -32,7 +32,7 @@
       coverage, Ruff, formatting, mypy, and strict OpenSpec validation.
 - [x] 5.2 Build/install the wheel outside the source tree and run authenticated
       REST plus CLI metrics over mixed jobs before and after pruning.
-- [ ] 5.3 Build documentation, sdist, and wheel; run dependency/lock/patch gates
+- [x] 5.3 Build documentation, sdist, and wheel; run dependency/lock/patch gates
       and the supported CI matrix without claiming unexecuted coverage.
-      Documentation, package, dependency, lock, and patch gates passed locally;
-      the supported CI matrix was not run.
+      Documentation, package, dependency, lock, patch, and supported CI matrix
+      gates passed.
