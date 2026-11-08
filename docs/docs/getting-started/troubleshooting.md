@@ -30,10 +30,10 @@ empty or the phrase is not present.
 
 ### Batch job stays `pending`
 
-`metawarc jobs submit` writes the file immediately; the runner is the
-asyncio Task started by `metawarc serve`'s lifespan handler. Make sure
-`metawarc serve` is running on the same workspace, then re-check
-`metawarc jobs list --status pending`.
+`metawarc jobs --dbfile collection.db submit` writes the file immediately; the
+runner is the asyncio Task started by `metawarc serve`'s lifespan handler. Make
+sure `metawarc serve --dbfile collection.db` is running on the same workspace,
+then re-check `metawarc jobs --dbfile collection.db list --status pending`.
 
 ### Unsupported or unrecognized schema
 

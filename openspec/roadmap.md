@@ -5,7 +5,7 @@ All changes from the 2026-08-04 repository review were implemented with the
 `changes/archive/2026-09-18-*` and their requirements are merged into
 `specs/`, which is the current source of truth for the shipped 2.x surface.
 
-See `PRODUCT_REVIEW_AND_IMPROVEMENT_PLAN.md` (2026-09-17) for the active
+See `PRODUCT_REVIEW_AND_IMPROVEMENT_PLAN.md` (2026-11-05) for the active
 improvement plan and full traceability.
 
 ## Shipped capabilities (specs)
@@ -26,11 +26,19 @@ improvement plan and full traceability.
 
 ## Deferred proposals
 
-The following remain deliberately unscoped until they are picked up as their
-own change proposals (see the 2026-09-17 review, Phase 2, for ordering):
+The following are deliberately not approved or scaffolded yet (see the
+2026-11-05 review, Phase 3, for ordering; Phases 0–2 are stabilization
+prerequisites):
 
-1. Collection exploration dashboard — read-only web UI over the catalog
-   (hosts, MIME stats, timelines), distinct from page replay.
+1. Filtered, reproducible text search — shared filters, pagination, documented
+   ordering, freshness semantics, and representative performance benchmarks.
+2. Collection exploration dashboard — read-only web UI over the catalog
+   (hosts, MIME stats, timelines, and search), distinct from page replay.
+3. Additional payload-export or analysis job kinds after the runner and
+   observability contracts are accepted.
 
-Each deferred item requires its own future OpenSpec change rather than being
-silently included in an earlier implementation.
+Batch retention, durable progress, result downloads, and retained-job
+operational metrics are implemented. The metrics change lives in
+`changes/add-job-operational-metrics/` until deployment and archival. Every
+remaining deferred item requires its own future OpenSpec change rather than
+being silently included in an earlier implementation.

@@ -165,9 +165,9 @@ capability spec.
   `POST /jobs` without an `Authorization` header
 - **THEN** the route returns 401 with the documented error envelope
 
-#### Scenario: Batch job route inherits the request timeout
+#### Scenario: Batch job uses its dedicated timeout
 - **WHEN** a job handler runs longer than
-  `ServerSettings.request_timeout_seconds`
+  `ServerSettings.job_timeout_seconds`
 - **THEN** the runner marks the job `failed`, the route returns
   the documented timeout code, and the worker is released
 

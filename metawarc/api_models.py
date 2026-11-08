@@ -73,6 +73,7 @@ class SearchResponse(BaseModel):
     phrase: str
     limit: int
     total: int
+    returned: int
     hits: list[SearchHit]
 
 
@@ -111,6 +112,7 @@ class JobResponse(BaseModel):
     created_at: str
     started_at: str | None = None
     ended_at: str | None = None
+    progress: dict[str, Any] | None = None
 
 
 class JobListResponse(BaseModel):
@@ -118,10 +120,36 @@ class JobListResponse(BaseModel):
     items: list[JobResponse]
 
 
+class JobTimingSummary(BaseModel):
+    samples: int
+    mean: float | None = None
+    max: float | None = None
+
+
+class JobStatusCounts(BaseModel):
+    pending: int = 0
+    running: int = 0
+    succeeded: int = 0
+    failed: int = 0
+    cancelled: int = 0
+
+
+class JobMetricsResponse(BaseModel):
+    generated_at: str
+    limit: int
+    total: int
+    included: int
+    truncated: bool
+    counts: JobStatusCounts
+    invalid: int
+    queue_wait_seconds: JobTimingSummary
+    execution_seconds: JobTimingSummary
+
+
 class JobResultResponse(BaseModel):
     job_id: str
     status: str
-    path: str
+    download_url: str
     format: str
     rows: int
     size: int
@@ -133,9 +161,12 @@ __all__ = [
     "HeaderResponse",
     "HealthResponse",
     "JobListResponse",
+    "JobMetricsResponse",
     "JobRequest",
     "JobResponse",
     "JobResultResponse",
+    "JobStatusCounts",
+    "JobTimingSummary",
     "MessageResponse",
     "RecordPage",
     "RecordResponse",

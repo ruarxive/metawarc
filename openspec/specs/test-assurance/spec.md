@@ -74,9 +74,10 @@ identified by the test-assurance capability.
 - **THEN** the critical-workflow gate still fails
 
 #### Scenario: A non-indexer public surface loses coverage
-- **WHEN** a change to `metawarc.cmds.server`, `metawarc.cmds.dump`, or
-  `metawarc.mcp_server` drops its module coverage below 70 % without
-  affecting the indexer
+- **WHEN** a change to `metawarc.api_server`, `metawarc.cli_jobs`,
+  `metawarc.dump`, `metawarc.jobs`, `metawarc.mcp_server`,
+  `metawarc.reporting`, or `metawarc.workspace` drops its module coverage below
+  70 % without affecting the indexer
 - **THEN** the corresponding per-module gate fails even if the
   repository-wide gate remains green
 
@@ -104,9 +105,10 @@ CI SHALL enforce a per-module coverage floor of 70 % for every public
 surface module in addition to the repository-wide coverage gate.
 
 #### Scenario: A public-surface refactor loses covered branches
-- **WHEN** a refactor reduces coverage on `metawarc.cmds.server`,
-  `metawarc.cmds.dump`, `metawarc.mcp_server`, or
-  `metawarc.cmds.indexer` below 70 %
+- **WHEN** a refactor reduces coverage on `metawarc.api_server`,
+  `metawarc.cli_jobs`, `metawarc.dump`, `metawarc.jobs`,
+  `metawarc.mcp_server`, `metawarc.reporting`, `metawarc.workspace`, or
+  `metawarc.indexer` below 70 %
 - **THEN** the matching `--cov-fail-under=70` step in the CI matrix
   fails before the PR is merged
 

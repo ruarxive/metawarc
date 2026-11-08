@@ -131,3 +131,102 @@ def test_mcp_search_records_returns_hits(workspace_with_texts: Path) -> None:
     assert data is not None
     assert data["total"] == 1
     assert data["hits"][0]["url"] == "https://example.test/welcome"
+
+
+def test_search_endpoint_reports_total_and_returned(workspace_with_texts: Path) -> None:
+    settings = ServerSettings(db_path=str(workspace_with_texts))
+    with TestClient(create_app(settings)) as client:
+        response = client.get("/records/search?phrase=e&limit=1")
+    assert response.status_code == 200
+    body = response.json()
+    assert body["total"] == 2
+    assert body["returned"] == 1
+    assert body["limit"] == 1
+    assert len(body["hits"]) == 1
+
+
+def test_mcp_search_reports_total_and_returned(workspace_with_texts: Path) -> None:
+    server = create_mcp(str(workspace_with_texts))
+    result = asyncio.run(server.call_tool("search_records", {"phrase": "e", "limit": 1}))
+    data = result.structured_content
+    assert data["total"] == 2
+    assert data["returned"] == 1
+    assert data["limit"] == 1
+    assert len(data["hits"]) == 1
+
+
+def test_search_endpoint_uses_active_max_page_configuration(
+    workspace_with_texts: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("METAWARC_MAX_PAGE", "1000")
+    limited = ServerSettings(db_path=str(workspace_with_texts), max_page=1)
+    with TestClient(create_app(limited)) as client:
+        response = client.get("/records/search?phrase=e&limit=2")
+    assert response.status_code == 422
+
+    configured = ServerSettings(db_path=str(workspace_with_texts), max_page=1000)
+    app = create_app(configured)
+    monkeypatch.setenv("METAWARC_MAX_PAGE", "1")
+    with TestClient(app) as client:
+        response = client.get("/records/search?phrase=e&limit=2")
+    assert response.status_code == 200
+
+
+def test_search_endpoint_opens_workspace_read_only(
+    workspace_with_texts: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    read_only_values = []
+    original_init = Workspace.__init__
+
+    def recording_init(self, *args, **kwargs):
+        read_only_values.append(kwargs.get("read_only"))
+        original_init(self, *args, **kwargs)
+
+    monkeypatch.setattr(Workspace, "__init__", recording_init)
+    settings = ServerSettings(db_path=str(workspace_with_texts))
+    with TestClient(create_app(settings)) as client:
+        response = client.get("/records/search?phrase=museum")
+    assert response.status_code == 200
+    assert read_only_values == [True]
+
+
+def test_mcp_search_opens_workspace_read_only(
+    workspace_with_texts: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    read_only_values = []
+    original_init = Workspace.__init__
+
+    def recording_init(self, *args, **kwargs):
+        read_only_values.append(kwargs.get("read_only"))
+        original_init(self, *args, **kwargs)
+
+    monkeypatch.setattr(Workspace, "__init__", recording_init)
+    server = create_mcp(str(workspace_with_texts))
+    asyncio.run(server.call_tool("search_records", {"phrase": "museum"}))
+    assert read_only_values == [True]
+
+
+def test_search_cli_distinguishes_missing_sidecar(indexed_workspace) -> None:
+    database, _ = indexed_workspace
+    result = CliRunner().invoke(cli, ["search", "--dbfile", str(database), "anything"])
+    assert result.exit_code == 1
+    assert "index-content --text" in result.output
+    assert "(no matches)" not in result.output
+
+
+def test_search_endpoint_distinguishes_missing_sidecar(indexed_workspace) -> None:
+    database, _ = indexed_workspace
+    settings = ServerSettings(db_path=str(database))
+    with TestClient(create_app(settings)) as client:
+        response = client.get("/records/search?phrase=anything")
+    assert response.status_code == 409
+    assert "index-content --text" in response.json()["detail"]
+
+
+def test_mcp_search_distinguishes_missing_sidecar(indexed_workspace) -> None:
+    from fastmcp.exceptions import ToolError
+
+    database, _ = indexed_workspace
+    server = create_mcp(str(database))
+    with pytest.raises(ToolError, match="index-content --text"):
+        asyncio.run(server.call_tool("search_records", {"phrase": "anything"}))

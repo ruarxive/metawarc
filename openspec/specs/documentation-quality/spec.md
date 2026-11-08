@@ -8,11 +8,20 @@ contributor guide, security policy, code of conduct, and support document.
 ## Requirements
 ### Requirement: Tested command documentation
 Documented CLI invocations SHALL be executed as documentation tests or covered
-by equivalent command-contract tests.
+by equivalent command-contract tests. CI SHALL execute every command form in the
+quick-start and use-case guides against an installed wheel, including real API,
+job, replay, and MCP workflows, and SHALL fail when a documented command form
+has no execution coverage.
 
 #### Scenario: Option name changes
 - **WHEN** a CLI option is renamed without updating an example
 - **THEN** documentation verification fails
+
+#### Scenario: Documented command loses execution coverage
+- **WHEN** a quick-start or use-case guide adds or changes a command form without
+  adding it to the installed-wheel documentation smoke scenario
+- **THEN** CI reports the uncovered command and fails alongside the documentation
+  site build
 
 ### Requirement: Accurate feature status
 Documentation SHALL distinguish features on the canonical release branch from

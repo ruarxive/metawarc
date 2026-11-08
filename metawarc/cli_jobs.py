@@ -6,7 +6,7 @@ import asyncio
 import json
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 import click
 
@@ -14,12 +14,15 @@ from .jobs import (
     EXPORT_DEFAULT_LIMIT,
     EXPORT_FORMATS,
     EXPORT_HARD_LIMIT,
+    JOB_METRICS_DEFAULT_LIMIT,
+    JOB_METRICS_HARD_LIMIT,
     Job,
     JobKind,
     JobRunner,
     JobStatus,
     JobStore,
 )
+from .progress import ProgressEvent, RichProgressRenderer, resolve_progress
 from .query import RecordQuery
 
 
@@ -48,14 +51,21 @@ class _CLIJobSettings:
         self.db_path = db_path
         self.data_dir = data_dir
         self.job_max_concurrent = 1
-        self.request_timeout_seconds = 30
+        self.job_timeout_seconds = 300
+        self.job_retention_days = 0.0
 
 
-def _print_job(job: Job | None) -> None:
+def _job_dict(job: Job, store: JobStore) -> dict[str, Any]:
+    payload = job.to_dict()
+    payload["progress"] = store.load_progress(job.id)
+    return payload
+
+
+def _print_job(job: Job | None, store: JobStore) -> None:
     if job is None:
         click.echo("(no such job)", err=True)
         sys.exit(1)
-    click.echo(json.dumps(job.to_dict(), ensure_ascii=False, sort_keys=True, default=str))
+    click.echo(json.dumps(_job_dict(job, store), ensure_ascii=False, sort_keys=True, default=str))
 
 
 @click.group("jobs")
@@ -131,14 +141,17 @@ def jobs_submit(
         "size_max": size_max,
     }
     filters = {key: value for key, value in filters.items() if value not in (None, "")}
-    job = runner.submit(
-        kind_enum,
-        {
-            "format": format_,
-            "limit": limit,
-            "filters": filters,
-        },
-    )
+    try:
+        job = runner.submit(
+            kind_enum,
+            {
+                "format": format_,
+                "limit": limit,
+                "filters": filters,
+            },
+        )
+    except ValueError as exc:
+        raise click.UsageError(str(exc)) from exc
     click.echo(job.id)
 
 
@@ -156,7 +169,12 @@ def jobs_list(status: str | None, limit: int) -> None:
     runner = _build_runner(ctx)
     jobs = runner.list_jobs(status=status, limit=limit)
     click.echo(
-        json.dumps([job.to_dict() for job in jobs], ensure_ascii=False, sort_keys=True, default=str)
+        json.dumps(
+            [_job_dict(job, runner.store) for job in jobs],
+            ensure_ascii=False,
+            sort_keys=True,
+            default=str,
+        )
     )
 
 
@@ -166,24 +184,54 @@ def jobs_get(job_id: str) -> None:
     """Show one batch job."""
     ctx = click.get_current_context()
     runner = _build_runner(ctx)
-    _print_job(runner.get(job_id))
+    _print_job(runner.get(job_id), runner.store)
 
 
 @jobs_group.command("wait")
 @click.argument("job_id")
 @click.option("--poll-seconds", default=1.0, show_default=True, type=float)
 @click.option("--timeout", default=300, show_default=True, type=int)
-def jobs_wait(job_id: str, poll_seconds: float, timeout: int) -> None:
+@click.option(
+    "--progress/--no-progress",
+    default=None,
+    help="Render durable row progress on stderr (auto-detects interactive output).",
+)
+def jobs_wait(job_id: str, poll_seconds: float, timeout: int, progress: bool | None) -> None:
     """Poll until JOB_ID finishes; exit non-zero on failure or cancellation."""
     ctx = click.get_current_context()
     runner = _build_runner(ctx)
 
-    async def _poll() -> Job | None:
+    def _emit_progress(renderer: RichProgressRenderer, job: Job) -> None:
+        snapshot = runner.store.load_progress(job.id)
+        if snapshot is None:
+            return
+        status: Literal["running", "complete", "failed"]
+        if job.status == JobStatus.SUCCEEDED.value:
+            status = "complete"
+        elif job.status in {JobStatus.FAILED.value, JobStatus.CANCELLED.value}:
+            status = "failed"
+        else:
+            status = "running"
+        renderer(
+            ProgressEvent(
+                operation="jobs",
+                phase="wait",
+                task_id=job.id,
+                label=f"Job {job.id}",
+                unit="rows",
+                completed=snapshot["processed_rows"],
+                total=snapshot["total_rows"],
+                status=status,
+            )
+        )
+
+    async def _poll(renderer: RichProgressRenderer) -> Job | None:
         elapsed = 0.0
         while elapsed < timeout:
             job = runner.get(job_id)
             if job is None:
                 return None
+            _emit_progress(renderer, job)
             if job.status in {
                 JobStatus.SUCCEEDED.value,
                 JobStatus.FAILED.value,
@@ -192,23 +240,28 @@ def jobs_wait(job_id: str, poll_seconds: float, timeout: int) -> None:
                 return job
             await asyncio.sleep(poll_seconds)
             elapsed += poll_seconds
-        return runner.get(job_id)
+        job = runner.get(job_id)
+        if job is not None:
+            _emit_progress(renderer, job)
+        return job
 
-    job = asyncio.run(_poll())
+    enabled = resolve_progress(progress, stream=sys.stderr)
+    with RichProgressRenderer(enabled=enabled) as renderer:
+        job = asyncio.run(_poll(renderer))
     if job is None:
         click.echo("(no such job)", err=True)
         sys.exit(1)
     if job.status == JobStatus.SUCCEEDED.value:
-        _print_job(job)
+        _print_job(job, runner.store)
         return
     if job.status == JobStatus.CANCELLED.value:
-        _print_job(job)
+        _print_job(job, runner.store)
         sys.exit(2)
     if job.status == JobStatus.FAILED.value:
-        _print_job(job)
+        _print_job(job, runner.store)
         sys.exit(3)
     # Timed out
-    _print_job(job)
+    _print_job(job, runner.store)
     sys.exit(124)
 
 
@@ -225,7 +278,42 @@ def jobs_cancel(job_id: str) -> None:
         sys.exit(1)
     except ValueError as exc:
         raise click.ClickException(str(exc)) from exc
-    _print_job(job)
+    _print_job(job, runner.store)
+
+
+@jobs_group.command("metrics")
+@click.option(
+    "--limit",
+    default=JOB_METRICS_DEFAULT_LIMIT,
+    show_default=True,
+    type=click.IntRange(1, JOB_METRICS_HARD_LIMIT),
+    help="Maximum number of newest valid retained jobs to aggregate.",
+)
+def jobs_metrics(limit: int) -> None:
+    """Aggregate operational metrics over retained jobs without executing work."""
+    ctx = click.get_current_context()
+    _, data_dir = _jobs_root(ctx)
+    payload = JobStore(data_dir).metrics(limit=limit)
+    click.echo(json.dumps(payload, ensure_ascii=False, sort_keys=True, allow_nan=False))
+
+
+@jobs_group.command("prune")
+@click.option(
+    "--retention-days",
+    required=True,
+    type=click.FloatRange(min=0.0),
+    help="Delete terminal jobs older than this many days (0 selects all eligible jobs).",
+)
+@click.option("--apply", is_flag=True, help="Actually delete; without this flag only preview.")
+def jobs_prune(retention_days: float, apply: bool) -> None:
+    """Preview or remove expired terminal jobs and their owned artifacts."""
+    ctx = click.get_current_context()
+    runner = _build_runner(ctx)
+    try:
+        report = runner.store.prune(retention_days=retention_days, apply=apply)
+    except ValueError as exc:
+        raise click.UsageError(str(exc)) from exc
+    click.echo(json.dumps(report, ensure_ascii=False, sort_keys=True, default=str))
 
 
 __all__ = ["jobs_group", "RecordQuery"]

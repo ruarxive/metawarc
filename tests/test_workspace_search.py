@@ -120,6 +120,87 @@ def test_search_text_is_case_insensitive(workspace_with_texts: Path) -> None:
     assert results[0]["url"] == "https://example.test/welcome"
 
 
+def test_search_text_centers_snippets_on_matches(indexed_workspace) -> None:
+    database, _ = indexed_workspace
+    texts = {
+        "WARC-START": "needle" + "a" * 300,
+        "WARC-MIDDLE": "b" * 150 + "needle" + "c" * 150,
+        "WARC-END": "d" * 300 + "needle",
+        "WARC-LATE": "e" * 400 + "needle" + "f" * 400,
+    }
+    with Workspace(str(database), read_only=False, create=False) as workspace:
+        archive_id = workspace.list_archives()[0]["id"]
+        rows = [
+            {
+                "archive_id": archive_id,
+                "warc_id": warc_id,
+                "source": "sample.warc",
+                "url": f"https://example.test/{warc_id}",
+                "language": "en",
+                "text": text,
+            }
+            for warc_id, text in texts.items()
+        ]
+        _publish_texts_sidecar(workspace, archive_id, rows)
+        results = workspace.search_text("needle", limit=10)
+
+    snippets = {row["warc_id"]: row["snippet"] for row in results}
+    assert snippets["WARC-START"] == texts["WARC-START"][:256]
+    assert snippets["WARC-MIDDLE"] == texts["WARC-MIDDLE"][25:281]
+    assert snippets["WARC-END"] == texts["WARC-END"][175:]
+    assert snippets["WARC-LATE"] == texts["WARC-LATE"][275:531]
+    assert all("needle" in snippet for snippet in snippets.values())
+
+
+def test_search_text_treats_like_metacharacters_literally(indexed_workspace) -> None:
+    database, _ = indexed_workspace
+    with Workspace(str(database), read_only=False, create=False) as workspace:
+        archive_id = workspace.list_archives()[0]["id"]
+        rows = [
+            {
+                "archive_id": archive_id,
+                "warc_id": warc_id,
+                "source": "sample.warc",
+                "url": f"https://example.test/{warc_id}",
+                "language": "en",
+                "text": text,
+            }
+            for warc_id, text in [
+                ("WARC-PERCENT", "100% coverage"),
+                ("WARC-PLAIN", "plain text"),
+                ("WARC-UNDERSCORE", "under_score"),
+                ("WARC-OTHER", "underXscore"),
+            ]
+        ]
+        _publish_texts_sidecar(workspace, archive_id, rows)
+        percent = workspace.search_text("%", limit=10)
+        underscore = workspace.search_text("_", limit=10)
+
+    assert [row["warc_id"] for row in percent] == ["WARC-PERCENT"]
+    assert [row["warc_id"] for row in underscore] == ["WARC-UNDERSCORE"]
+
+
+def test_search_text_orders_limited_results_deterministically(indexed_workspace) -> None:
+    database, _ = indexed_workspace
+    with Workspace(str(database), read_only=False, create=False) as workspace:
+        archive_id = workspace.list_archives()[0]["id"]
+        rows = [
+            {
+                "archive_id": archive_id,
+                "warc_id": warc_id,
+                "source": "sample.warc",
+                "url": f"https://example.test/{warc_id}",
+                "language": "en",
+                "text": "shared needle",
+            }
+            for warc_id in ["WARC-2", "WARC-1", "WARC-3"]
+        ]
+        _publish_texts_sidecar(workspace, archive_id, rows)
+        results = [workspace.search_text("needle", limit=2) for _ in range(5)]
+
+    assert all([row["warc_id"] for row in result] == ["WARC-1", "WARC-2"] for result in results)
+
+
 def test_search_text_round_trips_pdf_payload(indexed_workspace, monkeypatch) -> None:
     """The PdfTextExtractor populates the texts sidecar; Workspace.search_text matches."""
     from metawarc.extractor import PdfTextExtractor

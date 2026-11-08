@@ -21,12 +21,14 @@ classifiers = [
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Topic :: System :: Archiving",
 ]
 dependencies = [
   "beautifulsoup4>=4.12",
   "click>=8.1",
   "duckdb>=1.0",
+  "filelock>=3.13",
   "fonttools[woff]>=4.53",
   "hachoir>=3.2",
   "lxml>=5.0",
@@ -39,11 +41,11 @@ dependencies = [
 
 [project.optional-dependencies]
 api = ["fastapi>=0.115", "pydantic>=2.8", "uvicorn>=0.30"]
-mcp = ["fastmcp>=2.0"]
+mcp = ["fastmcp>=3.4.10,<4"]
 replay = ["fastapi>=0.115", "pydantic>=2.8", "uvicorn>=0.30"]
 all = [
   "fastapi>=0.115",
-  "fastmcp>=2.0",
+  "fastmcp>=3.4.10,<4",
   "pydantic>=2.8",
   "uvicorn>=0.30",
 ]

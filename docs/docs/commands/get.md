@@ -7,8 +7,8 @@ description: "metawarc get command reference"
 Export one payload by WARC record ID.
 
 ```bash
-metawarc get '<urn:uuid:...>' --dbfile collection.db --output one.pdf
-metawarc get '<urn:uuid:...>' --dbfile collection.db --archive-id ARCHIVE_ID
+metawarc get 'urn:uuid:...' --dbfile collection.db --output one.pdf
+metawarc get 'urn:uuid:...' --dbfile collection.db --archive-id ARCHIVE_ID
 ```
 
 **Options:** `--archive-id` (disambiguate a repeated WARC record ID),

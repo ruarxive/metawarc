@@ -39,8 +39,9 @@ metawarc search "API" --dbfile collection.db --limit 10
 ```
 
 Each match prints one tab-separated line:
-`<warc_id>\t<url>\t<snippet>`. The snippet is the first 256 characters
-of the matched text.
+`<warc_id>\t<url>\t<snippet>`. The snippet is centered on the first
+match and normally contains at most 256 characters; it expands when
+necessary to include a phrase longer than 256 characters.
 
 ### REST
 
@@ -50,9 +51,10 @@ curl -H "Authorization: Bearer $METAWARC_API_TOKEN" \
 ```
 
 `GET /records/search` accepts `phrase` (1–512 characters) and `limit`
-(1 – `METAWARC_MAX_PAGE`, default 50). The response is a
-`SearchResponse` carrying `phrase`, `limit`, `total`, and a `hits` list
-with `archive_id`, `warc_id`, `source`, `url`, and `snippet`.
+(1 – `METAWARC_MAX_PAGE`, default 50). The response carries `phrase`,
+`limit`, `total`, `returned`, and `hits`. `total` is the number of matches
+in the active sidecar, while `returned` is the number of rows in `hits`.
+Each hit contains `archive_id`, `warc_id`, `source`, `url`, and `snippet`.
 
 ### MCP
 
@@ -60,31 +62,28 @@ with `archive_id`, `warc_id`, `source`, `url`, and `snippet`.
 search_records(phrase="Welcome to the museum of modern art", limit=50)
 ```
 
-Returns the same `hits` structure as the REST endpoint.
+Returns the same counts and `hits` structure as the REST endpoint.
 
 ## Backend
 
 DuckDB's FTS extension regressed in 1.5.x — its `create_fts_index`
 pragma fails to materialise the virtual index. The dependable backend
 is therefore a bounded `read_parquet` scan with a case-insensitive
-`ILIKE '%phrase%'` predicate. For workspaces with hundreds of
-thousands of records this is well within Parquet's strengths and avoids
-a second index to keep in sync.
-
-The `_ensure_texts_index` helper inside `Workspace` is a no-op
-placeholder that retains the documented contract (return `True` when
-at least one `texts` sidecar is present, `False` otherwise) so the
-caller can surface a useful "no indexable sidecar" message.
+literal contains predicate. `%` and `_` are ordinary phrase characters,
+not wildcards. Results are ordered by `archive_id`, `warc_id`, `source`,
+and `url`, so repeated limited searches return the same rows. No second
+FTS index is created or kept in sync.
 
 ## Boundaries
 
 - Empty phrases and `limit` higher than the configured `METAWARC_MAX_PAGE`
-  are rejected with HTTP 400 (REST) or `click.UsageError` (CLI).
-- Phrase matching is `ILIKE '%phrase%'`: matches can span HTML markup,
-  PDF/OOXML artefacts, and arbitrary slice boundaries in the projected
-  text.
-- A workspace with no `texts` sidecar returns an empty `hits` list and the
-  CLI prints `(no matches)` and exits 0.
+  are rejected. REST returns HTTP 422 for an empty query or excessive
+  limit, and HTTP 400 for a whitespace-only phrase.
+- If no `texts` sidecar exists, the CLI exits 1 with an
+  `index-content --text` hint, REST returns HTTP 409, and MCP returns a
+  tool error. An existing sidecar with no matches returns an empty `hits`
+  list; the CLI prints `(no matches)` and exits 0.
+- CLI, REST, and MCP open the workspace read-only while searching.
 
 ## Refresh after new WARCs
 

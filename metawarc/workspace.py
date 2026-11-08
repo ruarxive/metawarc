@@ -1041,44 +1041,38 @@ class Workspace:
         if path.exists():
             shutil.rmtree(path)
 
-    def _ensure_texts_index(self) -> bool:
-        """No-op placeholder retained for the documented contract.
+    def has_text_sidecar(self) -> bool:
+        """Return whether at least one active ``texts`` sidecar is available."""
+        return bool(self.active_sidecar_paths("texts", None))
 
-        The implementation now relies on a columnar Parquet scan rather
-        than DuckDB's FTS extension, which has regressed in DuckDB
-        1.5.x. The scan reads the ``texts`` sidecar on every call; for
-        workspaces with hundreds of thousands of records this is well
-        within Parquet's strengths and avoids a second index to keep in
-        sync.
-
-        Returns True when at least one ``texts`` sidecar is present,
-        False otherwise so callers can surface a useful "no indexable
-        sidecar" message.
-        """
-        paths = self.active_sidecar_paths("texts", None)
-        return bool(paths)
-
-    def search_text(self, phrase: str, *, limit: int = 50) -> list[dict[str, object]]:
+    def search_text(
+        self,
+        phrase: str,
+        *,
+        limit: int = 50,
+        max_page: int | None = None,
+    ) -> list[dict[str, object]]:
         """Phrase-search across the ``texts`` sidecar.
 
-        Empty phrases and ``limit`` higher than the workspace's
-        ``ServerSettings.max_page`` are rejected. Returns a list of
-        rows shaped ``{archive_id, warc_id, source, url, snippet}``.
+        Empty phrases and ``limit`` higher than ``max_page`` are rejected.
+        Returns a deterministically ordered list of rows shaped
+        ``{archive_id, warc_id, source, url, snippet}``. Each snippet is
+        centered on the first match and contains the complete phrase.
 
         The search reads the sidecar Parquet files via DuckDB's
-        columnar ``read_parquet`` and matches phrases with a
-        case-insensitive ``LIKE`` predicate. The DuckDB FTS extension
-        regressed in 1.5.x (its ``create_fts_index`` pragma fails to
-        materialise the virtual index), so the columnar scan is the
-        dependable backend until a future DuckDB release fixes the
-        pragma.
+        columnar ``read_parquet`` and uses a case-insensitive literal
+        contains predicate. The DuckDB FTS extension regressed in 1.5.x
+        (its ``create_fts_index`` pragma fails to materialise the virtual
+        index), so the columnar scan is the dependable backend until a
+        future DuckDB release fixes the pragma.
         """
         phrase = phrase.strip()
         if not phrase:
             raise ValueError("phrase must not be empty")
         if limit < 1:
             raise ValueError("limit must be positive")
-        max_page = ServerSettings.from_env().max_page
+        if max_page is None:
+            max_page = ServerSettings().max_page
         if limit > max_page:
             raise ValueError(f"limit must not exceed {max_page}")
         paths = self.active_sidecar_paths("texts", None)
@@ -1086,13 +1080,26 @@ class Workspace:
             return []
         rows = self.con.execute(
             """
+            WITH matches AS (
+                SELECT archive_id, warc_id, source, url, text,
+                       strpos(lower(text), lower(?)) AS match_position
+                FROM read_parquet(?)
+            )
             SELECT archive_id, warc_id, source, url,
-                   substring(text, 1, 256) AS snippet
-            FROM read_parquet(?)
-            WHERE text ILIKE ?
+                   substring(
+                       text,
+                       greatest(
+                           match_position - greatest((256 - length(?)) // 2, 0),
+                           1
+                       ),
+                       greatest(256, length(?))
+                   ) AS snippet
+            FROM matches
+            WHERE match_position > 0
+            ORDER BY archive_id, warc_id, source, url
             LIMIT ?
             """,
-            [paths, f"%{phrase}%", limit],
+            [phrase, paths, phrase, phrase, limit],
         ).fetchall()
         return [
             {
@@ -1104,3 +1111,21 @@ class Workspace:
             }
             for row in rows
         ]
+
+    def count_text(self, phrase: str) -> int:
+        """Return the total number of literal phrase matches in ``texts``."""
+        phrase = phrase.strip()
+        if not phrase:
+            raise ValueError("phrase must not be empty")
+        paths = self.active_sidecar_paths("texts", None)
+        if not paths:
+            return 0
+        row = self.con.execute(
+            """
+            SELECT count(*)
+            FROM read_parquet(?)
+            WHERE contains(lower(text), lower(?))
+            """,
+            [paths, phrase],
+        ).fetchone()
+        return int(row[0]) if row is not None else 0

@@ -150,15 +150,18 @@ JSONL manifest with SHA-256 checksums.
 
 Long-running exports that do not fit inside a single HTTP timeout can be
 submitted as durable batch jobs. The MVP ships the `export-records` job kind,
-which materialises the result of `QueryService.list_records` to JSON, CSV, or
+which streams the result of `QueryService.iter_records` to JSON, CSV, or
 Parquet under `<data_dir>/jobs/<job_id>/`.
 
 ```bash
-# CLI
-metawarc jobs submit --format csv --limit 50000 --mimes application/pdf --output-format csv
-metawarc jobs list --status running
-metawarc jobs wait <job_id>
-metawarc jobs cancel <job_id>
+# Keep the API/job runner running in one terminal
+metawarc serve --dbfile collection.db
+
+# CLI submissions in another terminal use the same workspace
+metawarc jobs --dbfile collection.db submit --format csv --limit 50000 --mimes application/pdf
+metawarc jobs --dbfile collection.db list --status running
+metawarc jobs --dbfile collection.db wait <job_id>
+metawarc jobs --dbfile collection.db cancel <job_id>
 
 # REST (when 'metawarc serve' is running)
 curl -H "Authorization: Bearer $METAWARC_API_TOKEN" \
@@ -167,10 +170,11 @@ curl -H "Authorization: Bearer $METAWARC_API_TOKEN" \
      http://127.0.0.1:8000/jobs
 ```
 
-Job state persists across restarts; concurrency is bounded by
-`METAWARC_JOB_MAX_CONCURRENT` (default 4) and per-job execution by
-`METAWARC_JOB_TIMEOUT` (default 300s). The bearer-token discipline is
-inherited from the existing `/records` and `/replay` endpoints.
+CLI submissions are persisted in the shared workspace and executed by a
+running `metawarc serve` process. Job state persists across restarts;
+concurrency is bounded by `METAWARC_JOB_MAX_CONCURRENT` (default 4) and
+per-job execution by `METAWARC_JOB_TIMEOUT` (default 300s). The bearer-token
+discipline is inherited from the existing `/records` and `/replay` endpoints.
 
 ## REST API and MCP
 

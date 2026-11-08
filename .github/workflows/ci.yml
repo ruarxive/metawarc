@@ -16,6 +16,8 @@ jobs:
             python: "3.10"
           - os: ubuntu-latest
             python: "3.13"
+          - os: ubuntu-latest
+            python: "3.14"
           - os: macos-latest
             python: "3.13"
           - os: windows-latest
@@ -43,6 +45,10 @@ jobs:
       - run: pytest --cov=metawarc.api_server --cov-fail-under=70
       - run: pytest --cov=metawarc.dump --cov-fail-under=70
       - run: pytest --cov=metawarc.mcp_server --cov-fail-under=70
+      - run: pytest --cov=metawarc.jobs --cov-fail-under=70
+      - run: pytest --cov=metawarc.cli_jobs --cov-fail-under=70
+      - run: pytest --cov=metawarc.workspace --cov-fail-under=70
+      - run: pytest tests/test_reporting.py --cov=metawarc.reporting --cov-fail-under=70
 
   package:
     runs-on: ubuntu-latest
@@ -67,10 +73,10 @@ jobs:
             fi
             "smoke-$extra/bin/metawarc" --version
           done
-          smoke-core/bin/python .github/scripts/installed_smoke.py
-          smoke-api/bin/python -c 'from metawarc.api_server import create_app; assert create_app()'
-          smoke-mcp/bin/python -c 'from metawarc.mcp_server import create_mcp; assert create_mcp()'
-          smoke-all/bin/python -c 'from metawarc.api_server import create_app; from metawarc.mcp_server import create_mcp; assert create_app() and create_mcp()'
+          smoke-core/bin/python .github/scripts/installed_smoke.py --mode core
+          smoke-api/bin/python .github/scripts/installed_smoke.py --mode api
+          smoke-mcp/bin/python .github/scripts/installed_smoke.py --mode mcp
+          smoke-all/bin/python .github/scripts/installed_smoke.py --mode all --docs-root docs/docs
       - run: python .github/scripts/write_provenance.py
       - uses: actions/upload-artifact@v7
         with:

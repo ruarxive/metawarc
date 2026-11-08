@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ipaddress
+import math
 import os
 from dataclasses import dataclass
 
@@ -41,6 +42,16 @@ class ServerSettings:
     max_concurrency: int = 16
     job_max_concurrent: int = 4
     job_timeout_seconds: int = 300
+    job_retention_days: float = 0.0
+
+    def __post_init__(self) -> None:
+        try:
+            retention_days = float(self.job_retention_days)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("job_retention_days must be a finite non-negative number") from exc
+        if not math.isfinite(retention_days) or retention_days < 0:
+            raise ValueError("job_retention_days must be a finite non-negative number")
+        object.__setattr__(self, "job_retention_days", retention_days)
 
     @classmethod
     def from_env(cls) -> ServerSettings:
@@ -57,6 +68,7 @@ class ServerSettings:
             max_concurrency=env_int("METAWARC_MAX_CONCURRENCY", 16),
             job_max_concurrent=env_int("METAWARC_JOB_MAX_CONCURRENT", 4),
             job_timeout_seconds=env_int("METAWARC_JOB_TIMEOUT", 300),
+            job_retention_days=float(env_str("METAWARC_JOB_RETENTION_DAYS", "0.0") or "0.0"),
         )
 
 

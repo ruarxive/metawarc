@@ -59,19 +59,23 @@ metawarc serve --dbfile collection.db
 ## Long-running exports as batch jobs
 
 ```bash
-# submit a job that materialises the filtered result set to CSV
-metawarc jobs submit --format csv --limit 50000 --mimes application/pdf
+# keep the API/job runner running in one terminal
+metawarc serve --dbfile collection.db
+
+# in another terminal, submit a CSV export to the same workspace
+metawarc jobs --dbfile collection.db submit --format csv --limit 50000 --mimes application/pdf
 # -> job-7f3a...
 
 # wait for it
-metawarc jobs wait job-7f3a...
+metawarc jobs --dbfile collection.db wait job-7f3a...
 ```
 
 The MVP ships the `export-records` job kind, which produces JSON, CSV,
-or Parquet under `<data_dir>/jobs/<job_id>/`. Job state persists across
-server restarts; concurrency is bounded by `METAWARC_JOB_MAX_CONCURRENT`
-and per-job execution by `METAWARC_JOB_TIMEOUT`. The same workflow is
-reachable through `POST /jobs` on `metawarc serve`.
+or Parquet under `<data_dir>/jobs/<job_id>/`. CLI submissions are executed
+by a running `metawarc serve` process using the same workspace. Job state
+persists across server restarts; concurrency is bounded by
+`METAWARC_JOB_MAX_CONCURRENT` and per-job execution by
+`METAWARC_JOB_TIMEOUT`. The same workflow is reachable through `POST /jobs`.
 
 ## Incremental operation and recovery
 

@@ -41,13 +41,13 @@ description: "Practical defaults for indexing, query, export, and servers"
 
 ## Batch jobs
 
-- For exports that exceed `METAWARC_REQUEST_TIMEOUT_SECONDS` (default 30 s),
+- For exports that exceed `METAWARC_REQUEST_TIMEOUT` (default 30 s),
   submit a `metawarc jobs submit` job instead of polling
   `GET /records/list`. The MVP kind is `export-records`; the result
   lands in `<data_dir>/jobs/<job_id>/`.
-- The runner is shared between `POST /jobs` (HTTP) and `metawarc jobs
-  submit` (CLI). Submitting from the CLI writes the file immediately;
-  execution waits for `metawarc serve` to be running.
+- `POST /jobs` (HTTP) and `metawarc jobs submit` (CLI) share the same
+  persistent job store. Submitting from the CLI writes the job file
+  immediately; a running `metawarc serve` process executes the job.
 - Job state is plain JSON in `<data_dir>/jobs/`. Treat it like a local
   cache: monitor `doctor` and `cleanup` if you let jobs accumulate.
 - Use `metawarc jobs wait` for scripts that should block until a job

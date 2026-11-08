@@ -87,7 +87,7 @@ def test_empty_no_response_and_truncated_inputs(warc_factory, unreadable_gzip, t
     )
     assert summary.sources == 3
     assert summary.records == 0
-    assert summary.failed in {0, 1}
+    assert summary.failed == 0
 
 
 def test_missing_optional_headers_are_isolated(warc_factory, tmp_path: Path):

@@ -1,3 +1,2 @@
-prune metawarc/base
-prune metawarc/data
+recursive-include tests *.py
 global-exclude __pycache__ *.py[cod]

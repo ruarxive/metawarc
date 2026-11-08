@@ -7,6 +7,7 @@ from typing import Any
 
 from .analysis import STORED_METADATA_TYPES, AnalysisService
 from .query import AGGREGATE_FIELDS, QueryService, RecordQuery
+from .settings import ServerSettings
 from .workspace import Workspace
 
 _DIMENSION_CHOICES = tuple(AGGREGATE_FIELDS)
@@ -95,13 +96,30 @@ def create_mcp(dbfile: str = "warcindex.db", data_dir: str | None = None) -> Any
 
         Empty phrases and ``limit`` higher than ``METAWARC_MAX_PAGE``
         are rejected with a tool error. Returns a dict shaped
-        ``{phrase, limit, total, hits}`` where each ``hit`` carries
-        ``archive_id``, ``warc_id``, ``source``, ``url``, and a
+        ``{phrase, limit, total, returned, hits}`` where each ``hit``
+        carries ``archive_id``, ``warc_id``, ``source``, ``url``, and a
         ``snippet`` of the matched text.
         """
-        with Workspace(dbfile, data_dir=data_dir, read_only=False, create=False) as ws:
-            rows = ws.search_text(phrase, limit=limit)
-        return _serializable({"phrase": phrase, "limit": limit, "total": len(rows), "hits": rows})
+        with Workspace(dbfile, data_dir=data_dir, read_only=True, create=False) as ws:
+            if not ws.has_text_sidecar():
+                raise ValueError(
+                    "Text sidecar not found; run `metawarc index-content --text` first"
+                )
+            rows = ws.search_text(
+                phrase,
+                limit=limit,
+                max_page=ServerSettings.from_env().max_page,
+            )
+            total = ws.count_text(phrase)
+        return _serializable(
+            {
+                "phrase": phrase,
+                "limit": limit,
+                "total": total,
+                "returned": len(rows),
+                "hits": rows,
+            }
+        )
 
     @server.tool
     def collection_stats(

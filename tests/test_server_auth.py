@@ -48,23 +48,25 @@ def test_wrong_token_returns_401(indexed_workspace) -> None:
 
 
 def test_correct_token_is_accepted(indexed_workspace) -> None:
-    """A request with the documented bearer token succeeds."""
+    """A request with the documented bearer token passes authorization."""
     database, _ = indexed_workspace
     with TestClient(create_app(_settings(database, token="secret"))) as client:
         for path in PROTECTED_PATHS:
             params = {"phrase": "museum"} if path == "/records/search" else {}
             response = client.get(path, params=params, headers={"Authorization": "Bearer secret"})
-            assert response.status_code == 200, path
+            expected_status = 409 if path == "/records/search" else 200
+            assert response.status_code == expected_status, path
 
 
 def test_no_token_means_no_authentication(indexed_workspace) -> None:
-    """When the server is configured without a token, requests succeed without Authorization."""
+    """Without a configured token, requests reach the handlers unauthenticated."""
     database, _ = indexed_workspace
     with TestClient(create_app(_settings(database, token=None))) as client:
         for path in PROTECTED_PATHS:
             params = {"phrase": "museum"} if path == "/records/search" else {}
             response = client.get(path, params=params)
-            assert response.status_code == 200, path
+            expected_status = 409 if path == "/records/search" else 200
+            assert response.status_code == expected_status, path
 
 
 def test_replay_endpoints_inherit_auth(indexed_workspace) -> None:

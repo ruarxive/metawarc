@@ -4,6 +4,55 @@ All notable changes to this project are documented in this file.
 
 ## Unreleased
 
+### Added
+
+- Authenticated streaming downloads for completed JSON, CSV, and Parquet batch
+  exports through `GET /jobs/{id}/result/content`, with safe artifact
+  resolution, exact media types, attachment filenames, and `Cache-Control:
+  no-store`.
+- Durable per-job export progress in REST and CLI job views, with atomic
+  `processed_rows`, `total_rows`, and `updated_at` snapshots plus optional
+  stderr rendering in `metawarc jobs wait --progress`.
+- Safe terminal-job retention through preview-by-default
+  `metawarc jobs prune --retention-days N [--apply]` and opt-in
+  `METAWARC_JOB_RETENTION_DAYS` automatic cleanup with bounded batches.
+- Read-only retained-job operational metrics through authenticated
+  `GET /jobs/metrics` and `metawarc jobs metrics`, with lifecycle counts,
+  bounded newest-first selection, queue/execution durations, and explicit
+  invalid-file and truncation accounting.
+
+### Fixed
+
+- Stream batch exports through `QueryService.iter_records` so the configured
+  bulk limit is no longer truncated by the synchronous 1 000-row page limit.
+- Validate export formats, limits, filter names, and filter ranges before CLI
+  or REST submission persists a job.
+- Use the dedicated job timeout, persist CLI cancellation immediately, and
+  publish JSON, CSV, and Parquet results atomically without leaving partial
+  result files after failed or cancelled exports. A running server now
+  discovers standalone CLI submissions without requiring a restart.
+- Claim each batch job with an OS-backed cross-process lock, recover every
+  eligible pending job beyond the list page size, and mark unowned running
+  jobs as `failed` with `error="interrupted"` instead of leaving them stuck
+  or executing them twice.
+- Make text search literal and deterministic, center snippets on matches,
+  report truthful remote counts, open remote workspaces read-only, and
+  distinguish a missing text sidecar from a query with no matches.
+- Correct documented `get` record IDs to their normalized form without angle
+  brackets and pass `--dbfile collection.db` through documented batch-job
+  commands so submissions and the server use the same job store.
+
+### Changed
+
+- **BREAKING:** REST job list/get/result responses replace the server-local
+  `result.path` with a root-relative `download_url`. Clients must follow that
+  URL with the same bearer token to download the artifact. Persisted job JSON
+  and local `metawarc jobs get` / `jobs wait` output retain `result.path`.
+- Require `fastmcp>=3.4.10,<4` for the MCP extras and refresh the locked
+  security-sensitive transitive dependencies.
+- Declare Python 3.14 support after a clean installed-wheel dependency audit and
+  complete test run, and add Ubuntu 3.14 to the CI matrix.
+
 ## 2.0.3 (2026-10-06)
 
 ### Added

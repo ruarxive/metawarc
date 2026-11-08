@@ -12,7 +12,7 @@ from contextlib import asynccontextmanager
 from typing import Annotated, Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Path, Query, Request, Response
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from . import __version__
 from .api_models import (
@@ -21,6 +21,7 @@ from .api_models import (
     HeaderResponse,
     HealthResponse,
     JobListResponse,
+    JobMetricsResponse,
     JobRequest,
     JobResponse,
     JobResultResponse,
@@ -31,7 +32,15 @@ from .api_models import (
 )
 from .dump import iter_payload, safe_record_token
 from .errors import QueryValidationError, WorkspaceError
-from .jobs import Job, JobKind, JobRunner, JobStatus, JobStore
+from .jobs import (
+    JOB_METRICS_DEFAULT_LIMIT,
+    JOB_METRICS_HARD_LIMIT,
+    Job,
+    JobKind,
+    JobRunner,
+    JobStatus,
+    JobStore,
+)
 from .query import QueryService, RecordQuery
 from .replay import ReplayError, ReplayService, replay_url, wayback_timestamp
 from .settings import ServerSettings
@@ -57,7 +66,7 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
                 "job runner started data_dir=%s max_concurrent=%s timeout=%s",
                 data_dir,
                 config.job_max_concurrent,
-                config.request_timeout_seconds,
+                config.job_timeout_seconds,
             )
             yield
         finally:
@@ -289,24 +298,39 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
     @app.get(
         "/records/search",
         response_model=SearchResponse,
-        responses={400: {"model": ErrorResponse}},
+        responses={
+            400: {"model": ErrorResponse},
+            409: {"model": ErrorResponse},
+        },
     )
     def search_records(
         phrase: Annotated[str, Query(min_length=1, max_length=512)],
-        limit: Annotated[int, Query(ge=1, le=ServerSettings.from_env().max_page)] = 50,
+        limit: Annotated[int, Query(ge=1)] = 50,
         _: None = Depends(authorize),
     ) -> SearchResponse:
+        if limit > config.max_page:
+            raise HTTPException(
+                status_code=422,
+                detail=f"limit must not exceed {config.max_page}",
+            )
         with Workspace(
-            config.db_path, data_dir=config.data_dir, read_only=False, create=False
+            config.db_path, data_dir=config.data_dir, read_only=True, create=False
         ) as ws:
+            if not ws.has_text_sidecar():
+                raise HTTPException(
+                    status_code=409,
+                    detail="Text sidecar not found; run `metawarc index-content --text` first",
+                )
             try:
-                rows = ws.search_text(phrase, limit=limit)
+                rows = ws.search_text(phrase, limit=limit, max_page=config.max_page)
+                total = ws.count_text(phrase)
             except ValueError as exc:
                 raise HTTPException(status_code=400, detail=str(exc)) from exc
         return SearchResponse(
             phrase=phrase,
             limit=limit,
-            total=len(rows),
+            total=total,
+            returned=len(rows),
             hits=[
                 SearchHit(
                     archive_id=str(row["archive_id"]),
@@ -334,9 +358,9 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
         try:
             kind = JobKind(payload.kind)
             job_input = payload.job_input()
+            job = runner.submit(kind, job_input)
         except ValueError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
-        job = runner.submit(kind, job_input)
         response.headers["Location"] = f"/jobs/{job.id}"
         return _job_to_response(job)
 
@@ -359,8 +383,27 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
                 detail=f"Unsupported status {status!r}; choose from {', '.join(JobStatus.values())}",
             )
         runner: JobRunner = app.state.job_runner
-        items = [_job_to_response(item) for item in runner.list_jobs(status=status, limit=limit)]
+        items = [
+            _job_to_response(item, runner.store.load_progress(item.id))
+            for item in runner.list_jobs(status=status, limit=limit)
+        ]
         return JobListResponse(total=len(items), items=items)
+
+    @app.get(
+        "/jobs/metrics",
+        response_model=JobMetricsResponse,
+        responses={401: {"model": ErrorResponse}, 422: {"model": ErrorResponse}},
+    )
+    async def get_job_metrics(
+        limit: Annotated[
+            int,
+            Query(ge=1, le=JOB_METRICS_HARD_LIMIT),
+        ] = JOB_METRICS_DEFAULT_LIMIT,
+        _: None = Depends(authorize),
+    ) -> JobMetricsResponse:
+        runner: JobRunner = app.state.job_runner
+        payload = await asyncio.to_thread(runner.store.metrics, limit=limit)
+        return JobMetricsResponse.model_validate(payload)
 
     @app.get(
         "/jobs/{job_id}",
@@ -375,7 +418,22 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
         job = runner.get(job_id)
         if job is None:
             raise HTTPException(status_code=404, detail="Job not found")
-        return _job_to_response(job)
+        return _job_to_response(job, runner.store.load_progress(job.id))
+
+    def _validated_result(job_id: str) -> tuple[Job, pathlib.Path, str]:
+        runner: JobRunner = app.state.job_runner
+        job = runner.get(job_id)
+        if job is None:
+            raise HTTPException(status_code=404, detail="Job not found")
+        if job.status != JobStatus.SUCCEEDED.value:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Job is {job.status}; result is only available when succeeded",
+            )
+        artifact = runner.store.resolve_result(job)
+        if artifact is None:
+            raise HTTPException(status_code=404, detail="Result artifact not found")
+        return job, artifact, str(job.result["format"])
 
     @app.get(
         "/jobs/{job_id}/result",
@@ -390,23 +448,44 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
         job_id: Annotated[str, Path(description="Job id (returned by POST /jobs)")],
         _: None = Depends(authorize),
     ) -> JobResultResponse:
-        runner: JobRunner = app.state.job_runner
-        job = runner.get(job_id)
-        if job is None:
-            raise HTTPException(status_code=404, detail="Job not found")
-        if job.status != JobStatus.SUCCEEDED.value:
-            raise HTTPException(
-                status_code=409,
-                detail=f"Job is {job.status}; result is only available when succeeded",
-            )
-        result = job.result or {}
+        job, artifact, format_ = _validated_result(job_id)
+        try:
+            size = artifact.stat().st_size
+        except OSError as exc:
+            raise HTTPException(status_code=404, detail="Result artifact not found") from exc
         return JobResultResponse(
             job_id=job.id,
             status=job.status,
-            path=str(result.get("path", "")),
-            format=str(result.get("format", "")),
-            rows=int(result.get("rows", 0)),
-            size=int(result.get("size", 0)),
+            download_url=f"/jobs/{job.id}/result/content",
+            format=format_,
+            rows=int(job.result.get("rows", 0)),
+            size=size,
+        )
+
+    @app.get(
+        "/jobs/{job_id}/result/content",
+        response_class=FileResponse,
+        responses={
+            401: {"model": ErrorResponse},
+            404: {"model": ErrorResponse},
+            409: {"model": ErrorResponse},
+        },
+    )
+    async def download_job_result(
+        job_id: Annotated[str, Path(description="Job id (returned by POST /jobs)")],
+        _: None = Depends(authorize),
+    ) -> FileResponse:
+        job, artifact, format_ = _validated_result(job_id)
+        media_types = {
+            "json": "application/json",
+            "csv": "text/csv; charset=utf-8",
+            "parquet": "application/vnd.apache.parquet",
+        }
+        return FileResponse(
+            artifact,
+            media_type=media_types[format_],
+            filename=f"metawarc-{job.id}.{format_}",
+            headers={"Cache-Control": "no-store"},
         )
 
     @app.delete(
@@ -431,7 +510,7 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
             raise HTTPException(status_code=409, detail=str(exc)) from exc
         if job is None:
             raise HTTPException(status_code=404, detail="Job not found")
-        return _job_to_response(job)
+        return _job_to_response(job, runner.store.load_progress(job.id))
 
     def _replay_home(_: None = Depends(authorize)) -> Response:
         with Workspace(
@@ -525,17 +604,22 @@ def create_app(settings: ServerSettings | None = None) -> FastAPI:
     return app
 
 
-def _job_to_response(job: Job) -> JobResponse:
+def _job_to_response(job: Job, progress: dict[str, Any] | None = None) -> JobResponse:
+    result = dict(job.result)
+    result.pop("path", None)
+    if job.status == JobStatus.SUCCEEDED.value:
+        result["download_url"] = f"/jobs/{job.id}/result/content"
     return JobResponse(
         id=job.id,
         kind=job.kind,
         status=job.status,
         input=job.input,
-        result=job.result,
+        result=result,
         error=job.error,
         created_at=job.created_at,
         started_at=job.started_at,
         ended_at=job.ended_at,
+        progress=progress,
     )
 
 

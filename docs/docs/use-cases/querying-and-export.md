@@ -46,7 +46,7 @@ extension regressed in 1.5.x so a columnar scan is the dependable backend.
 
 ```bash
 metawarc dump --dbfile collection.db --exts pdf --limit 100 --output exported
-metawarc get '<urn:uuid:...>' --dbfile collection.db --output one.pdf
+metawarc get 'urn:uuid:...' --dbfile collection.db --output one.pdf
 ```
 
 Payload exports sanitize record IDs, avoid overwrites, stream in source order,
@@ -57,13 +57,13 @@ Exported files remain untrusted content.
 
 Exports that exceed a single HTTP timeout become durable batch jobs. The
 MVP ships the `export-records` kind, which materialises the result of
-`QueryService.list_records` to JSON, CSV, or Parquet under
+`QueryService.iter_records` to JSON, CSV, or Parquet under
 `<data_dir>/jobs/<job_id>/`:
 
 ```bash
-metawarc jobs submit --format csv --limit 50000 --mimes application/pdf
+metawarc jobs --dbfile collection.db submit --format csv --limit 50000 --mimes application/pdf
 # -> job-XXXXXXXXXXXXXXXX
-metawarc jobs wait job-XXXXXXXXXXXXXXXX
+metawarc jobs --dbfile collection.db wait job-XXXXXXXXXXXXXXXX
 ```
 
 See [`list-files`](/commands/list-files), [`dump`](/commands/dump),

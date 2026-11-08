@@ -73,10 +73,12 @@ exact URL combined with a closest or exact timestamp policy.
   (prefer earlier `rec_date`, then lower `archive_id`, then lower `offset`)
 
 ### Requirement: Phrase search
-The record-query service SHALL expose a phrase-search method over
-the `texts` sidecar through the existing `record-query` capability,
-gated by the same allowlist and pagination discipline as the other
-query paths.
+The record-query service SHALL expose a case-insensitive literal
+phrase-search method over the `texts` sidecar. Results SHALL be ordered
+by `archive_id`, `warc_id`, `source`, and `url`, and each snippet SHALL
+be centered on the first match and contain the complete phrase. Remote
+adapters SHALL open the workspace read-only, inject their active page
+configuration, and distinguish total matches from returned rows.
 
 #### Scenario: Phrase search hits the index
 - **WHEN** a user runs `metawarc search <phrase>` with at least one
@@ -84,10 +86,30 @@ query paths.
 - **THEN** the CLI prints each match's URL, archive, and a text
   snippet that includes the matched phrase
 
+#### Scenario: Phrase contains LIKE metacharacters
+- **WHEN** the phrase contains `%` or `_`
+- **THEN** those characters are matched literally and do not act as
+  wildcards
+
+#### Scenario: Limited search is repeated
+- **WHEN** the same phrase and limit are queried repeatedly
+- **THEN** the same rows are returned in the same deterministic order
+
+#### Scenario: Remote result is limited
+- **WHEN** more matches exist than the requested limit
+- **THEN** `total` reports every match, `returned` reports the number of
+  hits returned, and `limit` reports the requested bound
+
+#### Scenario: Text sidecar is missing
+- **WHEN** a CLI, REST, or MCP search is requested before any `texts`
+  sidecar exists
+- **THEN** the caller receives an actionable `index-content --text`
+  error instead of an indistinguishable empty result
+
 #### Scenario: Phrase search respects the page limit
 - **WHEN** the user sets `--limit N`
-- **THEN** at most `N` records are returned, never more; the limit
-  is capped at the configured `ServerSettings.max_page`
+- **THEN** at most `N` records are returned, and a limit above the
+  active `ServerSettings.max_page` is rejected
 
 #### Scenario: Empty phrase is rejected
 - **WHEN** a user submits an empty phrase

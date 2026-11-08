@@ -73,16 +73,18 @@ catalog without a new schema migration.
   returns the path
 
 ### Requirement: Phrase search over the `texts` sidecar
-The workspace SHALL expose a `search_text(phrase, limit=50)` method that
-reads every active `texts` sidecar via a columnar Parquet scan and
-matches phrases with a case-insensitive `ILIKE` predicate. The result
-SHALL carry `archive_id`, `warc_id`, `source`, `url`, and a `snippet`
-of the matched text, capped at the configured `ServerSettings.max_page`.
+The workspace SHALL expose `search_text(phrase, limit=50, max_page=None)`
+and `count_text(phrase)` methods that read active `texts` sidecars via a
+columnar Parquet scan and apply case-insensitive literal matching. Search
+results SHALL carry `archive_id`, `warc_id`, `source`, `url`, and a
+match-centered `snippet`, ordered by those identity fields. The limit SHALL
+be bounded by the injected page configuration, or the default
+`ServerSettings.max_page` when no override is supplied.
 
 #### Scenario: Search against an empty sidecar
-- **WHEN** a user runs `metawarc search <phrase>` before any
-  `texts` sidecar exists
-- **THEN** the workspace reports no hits rather than erroring
+- **WHEN** `search_text` is called before any `texts` sidecar exists
+- **THEN** the workspace reports no hits rather than erroring, allowing
+  interface adapters to add their actionable missing-sidecar response
 
 #### Scenario: Subsequent searches reuse the columnar scan
 - **WHEN** a second search runs after the first
@@ -95,7 +97,7 @@ active `texts` sidecar unless `rescan=True` is set, mirroring the
 existing behaviour of the structured-metadata indexer.
 
 #### Scenario: Text sidecar exists, rescan is False
-- **WHEN** a user runs `metawarc content-index --text` over an archive
+- **WHEN** a user runs `metawarc index-content --text` over an archive
   that already has an active `texts` sidecar
 - **THEN** the workspace reports the archive as skipped and writes no
   new `texts` sidecar

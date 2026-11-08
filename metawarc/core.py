@@ -739,7 +739,15 @@ def search_command(
     """Phrase-search across the indexed ``texts`` sidecar."""
     try:
         with Workspace(dbfile, data_dir=data_dir, read_only=True, create=False) as workspace:
-            rows = workspace.search_text(phrase, limit=limit)
+            if not workspace.has_text_sidecar():
+                raise click.ClickException(
+                    "Text sidecar not found; run `metawarc index-content --text` first"
+                )
+            rows = workspace.search_text(
+                phrase,
+                limit=limit,
+                max_page=ServerSettings.from_env().max_page,
+            )
     except ValueError as exc:
         raise click.UsageError(str(exc)) from exc
     if not rows:
@@ -1061,6 +1069,7 @@ def _run_serve(
         max_concurrency=defaults.max_concurrency,
         job_max_concurrent=defaults.job_max_concurrent,
         job_timeout_seconds=defaults.job_timeout_seconds,
+        job_retention_days=defaults.job_retention_days,
     )
     try:
         import uvicorn

@@ -193,13 +193,13 @@ projection of HTML responses into a `texts` Parquet sidecar when the
 caller opts in.
 
 #### Scenario: HTML indexing with text extraction enabled
-- **WHEN** a user runs `metawarc content-index ... --text`
+- **WHEN** a user runs `metawarc index-content ... --text`
 - **THEN** the workspace produces a `texts` sidecar whose rows match
   the HTML responses and carry `archive_id`, `warc_id`, `source`,
   `url`, `language`, and `text` columns
 
 #### Scenario: HTML indexing with text extraction disabled
-- **WHEN** a user runs `metawarc content-index ...` without the flag
+- **WHEN** a user runs `metawarc index-content ...` without the flag
 - **THEN** no `texts` sidecar is written and the existing
   `links` sidecar is unaffected
 
@@ -209,13 +209,13 @@ for PDF and OOXML payloads, alongside the existing HTML projection,
 into the shared `texts` sidecar.
 
 #### Scenario: PDF payload with extractable content
-- **WHEN** a user runs `metawarc content-index --text` over an archive
+- **WHEN** a user runs `metawarc index-content --text` over an archive
   containing a PDF record
 - **THEN** the `texts` sidecar carries the concatenated page text
   truncated at `ExtractionLimits.max_payload_bytes`
 
 #### Scenario: OOXML payload with extractable content
-- **WHEN** a user runs `metawarc content-index --text` over an archive
+- **WHEN** a user runs `metawarc index-content --text` over an archive
   containing an OOXML record
 - **THEN** the `texts` sidecar carries the joined paragraph text from
   `word/document.xml`, truncated at `ExtractionLimits.max_payload_bytes`
@@ -227,24 +227,24 @@ into the shared `texts` sidecar.
 
 ### Requirement: Text sidecar population
 The metadata-extraction service SHALL populate the `texts` sidecar when
-the caller opts in via the `metawarc content-index --text` flag, by
+the caller opts in via the `metawarc index-content --text` flag, by
 running the text-extractor chain (`TextExtractor`, `PdfTextExtractor`,
 `OoxmlTextExtractor`) and writing one row per record.
 
 #### Scenario: HTML archive indexed with `--text`
-- **WHEN** a user runs `metawarc content-index --text sample.warc`
+- **WHEN** a user runs `metawarc index-content --text sample.warc`
 - **THEN** the workspace produces a `texts` sidecar whose rows carry
   `archive_id`, `warc_id`, `source`, `url`, `language`, and `text`
   for every HTML response record
 
 #### Scenario: PDF archive indexed with `--text`
-- **WHEN** a user runs `metawarc content-index --text` over an archive
+- **WHEN** a user runs `metawarc index-content --text` over an archive
   containing a PDF record
 - **THEN** the `texts` sidecar carries the concatenated page text for
   that record
 
 #### Scenario: Default indexing without `--text`
-- **WHEN** a user runs `metawarc content-index` without the flag
+- **WHEN** a user runs `metawarc index-content` without the flag
 - **THEN** no `texts` sidecar is written; existing structured-metadata
   sidecars are unchanged
 

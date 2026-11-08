@@ -24,7 +24,7 @@ metawarc ingest 'archives/**/*.warc*' --dbfile collection.db --dry-run
 metawarc dump --dbfile collection.db --exts pdf --limit 1000 --max-bytes 104857600 --output exported
 
 # Submit a long-running export as a batch job
-metawarc jobs submit --format csv --limit 50000 --mimes application/pdf
+metawarc jobs --dbfile collection.db submit --format csv --limit 50000 --mimes application/pdf
 ```
 
 ## Notes
@@ -49,7 +49,7 @@ metawarc jobs submit --format csv --limit 50000 --mimes application/pdf
 6. **Keep workspace local**: DuckDB and Parquet sidecars should live on fast local disk next to the catalog.
 7. **Do not pre-scan for progress**: unknown totals are shown as counters; Metawarc will not read a WARC twice just to compute a percentage.
 8. **Push large exports into batch jobs**: when a single HTTP request
-   would exceed `METAWARC_REQUEST_TIMEOUT_SECONDS` (default 30 s),
+   would exceed `METAWARC_REQUEST_TIMEOUT` (default 30 s),
    submit `metawarc jobs submit` instead of looping `list-files`.
 
 See also: [Indexing collections](/use-cases/indexing-collections),
