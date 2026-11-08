@@ -177,7 +177,7 @@ A read-only dashboard would make the existing catalog, statistics, and search us
 ### Phase 0 — Restore release and documentation gates (1–2 days)
 
 - [x] **0.1 Add regression tests first** for export limits 1,000/1,001, configured job timeout, standalone CLI cancellation, late-match snippets, literal `%`/`_`, deterministic search ordering, and truthful totals.
-- [ ] **0.2 Refresh dependencies and `uv.lock`.** Use versions that resolve the audit findings while retaining Python 3.10–3.13 compatibility. Re-run the full test matrix and MCP smoke tests. Dependencies, lockfile, local tests, and MCP smoke checks are complete; the supported OS/Python CI matrix remains pending.
+- [ ] **0.2 Refresh dependencies and `uv.lock`.** Use versions that resolve the audit findings while retaining Python 3.11–3.14 compatibility; Python 3.10 is excluded after reaching EOL and losing patched dependency releases. Re-run the full test matrix and MCP smoke tests. Dependencies, lockfile, local tests, and MCP smoke checks are complete; the supported OS/Python CI matrix remains pending.
 - [x] **0.3 Audit isolated install closures** for core, API, MCP, all, and dev. Keep the core audit clean and block release on unapproved findings in any supported closure.
 - [x] **0.4 Stop documentation from promising broken behavior.** Until code fixes land, remove or correct the 50,000-row and unsupported-option examples, state that CLI-submitted jobs require a running server, and remove the unsupported search-filter and multi-million-performance claims.
 - [x] **0.5 Correct current specs and command references** (`index-content`, actual environment variables, current module paths, job defaults). Do not rewrite archived proposals merely to hide historical mistakes.

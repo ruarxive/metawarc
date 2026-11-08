@@ -13,7 +13,7 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            python: "3.10"
+            python: "3.11"
           - os: ubuntu-latest
             python: "3.13"
           - os: ubuntu-latest
@@ -98,6 +98,9 @@ jobs:
       - name: Install documentation dependencies
         working-directory: ./docs
         run: npm ci
+      - name: Audit documentation dependencies
+        working-directory: ./docs
+        run: npm audit
       - name: Build documentation site
         working-directory: ./docs
         run: npm run build

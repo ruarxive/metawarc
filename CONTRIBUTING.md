@@ -1,6 +1,6 @@
 # Contributing
 
-Use Python 3.10 or newer and install `pip install -e '.[all,dev]'`. Keep changes
+Use Python 3.11 or newer and install `pip install -e '.[all,dev]'`. Keep changes
 scoped, add generated WARC fixtures rather than binary test archives, and do not
 commit local databases, sidecars, credentials, or extracted payloads.
 

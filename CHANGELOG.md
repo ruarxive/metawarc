@@ -52,6 +52,10 @@ All notable changes to this project are documented in this file.
   security-sensitive transitive dependencies.
 - Declare Python 3.14 support after a clean installed-wheel dependency audit and
   complete test run, and add Ubuntu 3.14 to the CI matrix.
+- **BREAKING:** Require Python 3.11 or newer after Python 3.10 reached EOL, and
+  require `filelock>=4.2.1` and `dnspython>=2.9.0` so all supported runtimes use
+  patched dependency releases. Refresh and audit the documentation npm closure,
+  including patched transitive overrides and Node.js 20+.
 
 ## 2.0.3 (2026-10-06)
 

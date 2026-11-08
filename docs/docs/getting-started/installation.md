@@ -4,7 +4,7 @@ description: "Install metawarc with pip, extras, or from source"
 ---
 # Installation
 
-Python 3.10 or newer is required.
+Python 3.11 or newer is required.
 
 ### Using pip
 
@@ -42,7 +42,7 @@ metawarc --help
 
 ### Requirements
 
-- Python 3.10 or greater
+- Python 3.11 or greater
 - Local WARC or WARC.GZ files; no network service is required for core indexing
   and querying
 

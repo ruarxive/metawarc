@@ -12,9 +12,9 @@ local databases, sidecars, credentials, or extracted payloads.
 
 ### Prerequisites
 
-- Python 3.10 or higher
+- Python 3.11 or higher
 - Git
-- Node.js 18+ (only if you are editing the documentation site)
+- Node.js 20+ (only if you are editing the documentation site)
 
 ### Installation
 

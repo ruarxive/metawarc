@@ -29,7 +29,7 @@ Contributor workflow: [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 ## Install
 
-Python 3.10 or newer is required.
+Python 3.11 or newer is required.
 
 ```bash
 pip install metawarc              # core CLI

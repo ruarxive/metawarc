@@ -7,7 +7,7 @@ name = "metawarc"
 version = "2.0.3"
 description = "Bounded, versioned indexing, extraction, and analysis for WARC collections"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 license = "MIT"
 authors = [{ name = "Ivan Begtin", email = "ivan@begtin.tech" }]
 keywords = ["warc", "web-archive", "metadata", "duckdb", "parquet"]
@@ -17,7 +17,6 @@ classifiers = [
   "Intended Audience :: Developers",
   "Intended Audience :: Science/Research",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -28,7 +27,7 @@ dependencies = [
   "beautifulsoup4>=4.12",
   "click>=8.1",
   "duckdb>=1.0",
-  "filelock>=3.13",
+  "filelock>=4.2.1",
   "fonttools[woff]>=4.53",
   "hachoir>=3.2",
   "lxml>=5.0",
@@ -41,9 +40,10 @@ dependencies = [
 
 [project.optional-dependencies]
 api = ["fastapi>=0.115", "pydantic>=2.8", "uvicorn>=0.30"]
-mcp = ["fastmcp>=3.4.10,<4"]
+mcp = ["dnspython>=2.9.0", "fastmcp>=3.4.10,<4"]
 replay = ["fastapi>=0.115", "pydantic>=2.8", "uvicorn>=0.30"]
 all = [
+  "dnspython>=2.9.0",
   "fastapi>=0.115",
   "fastmcp>=3.4.10,<4",
   "pydantic>=2.8",
@@ -107,7 +107,7 @@ select = ["E", "F", "I", "UP", "B", "C4", "SIM"]
 ignore = ["E501", "B904"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.11"
 check_untyped_defs = true
 no_implicit_optional = true
 warn_redundant_casts = true
