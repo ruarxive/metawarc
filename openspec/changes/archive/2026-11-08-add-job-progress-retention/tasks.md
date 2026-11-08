@@ -39,7 +39,7 @@
       prune cutoffs and batches beyond 50, and real two-process lock safety.
 - [x] 5.3 Build/install the wheel outside the source tree and run authenticated
       progress/download and preview/apply/prune-to-404 workflows.
-- [ ] 5.4 Build documentation, sdist, and wheel; run dependency/lock/patch
+- [x] 5.4 Build documentation, sdist, and wheel; run dependency/lock/patch
       gates and supported CI matrix without claiming unexecuted coverage.
-      Documentation, package, dependency, lock, and patch gates passed locally;
-      the supported CI matrix was not run.
+      Documentation, package, dependency, lock, patch, and supported CI matrix
+      gates passed.

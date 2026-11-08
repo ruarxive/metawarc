@@ -20,7 +20,7 @@ improvement plan and full traceability.
 | `collection-analysis` | `add-collection-analysis`, `add-metadata-analysis` |
 | `website-replay` | `add-website-replay` |
 | `remote-interfaces` | `secure-query-export-interfaces`, `add-website-replay`, `add-full-text-search`, `extend-text-search-to-pdf-ooxml`, `add-index-texts`, `enrich-mcp-readonly-surface`, `add-batch-job-api` |
-| `remote-batch-job` | `add-batch-job-api` |
+| `remote-batch-job` | `add-batch-job-api`, `add-durable-job-claims`, `add-job-result-download`, `add-job-progress-retention`, `add-job-operational-metrics` |
 | `cli-progress` | `add-cli-progress-reporting` |
 | `build-system` / `release-engineering` / `test-assurance` / `documentation-quality` | `consolidate-release-baseline`, `establish-quality-gates` |
 
@@ -37,8 +37,8 @@ prerequisites):
 3. Additional payload-export or analysis job kinds after the runner and
    observability contracts are accepted.
 
-Batch retention, durable progress, result downloads, and retained-job
-operational metrics are implemented. The metrics change lives in
-`changes/add-job-operational-metrics/` until deployment and archival. Every
-remaining deferred item requires its own future OpenSpec change rather than
-being silently included in an earlier implementation.
+Batch claims, retention, durable progress, result downloads, and retained-job
+operational metrics shipped in 2.0.4. Their completed changes are archived
+under `changes/archive/2026-11-08-*`. Every remaining deferred item requires its
+own future OpenSpec change rather than being silently included in an earlier
+implementation.

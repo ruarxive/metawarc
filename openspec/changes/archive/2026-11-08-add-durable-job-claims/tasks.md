@@ -42,7 +42,7 @@
       the 50 000-row JSON, CSV, and Parquet export scenario.
 - [x] 5.3 Run real subprocess crash/recovery and concurrent-server smoke
       tests against the built artifact locally.
-- [ ] 5.4 Run the new subprocess tests on the supported OS and Python CI
+- [x] 5.4 Run the new subprocess tests on the supported OS and Python CI
       matrix after the change is pushed.
 - [x] 5.5 Run documentation and strict OpenSpec builds, package builds,
       `pip check`, `uv lock --check`, `git diff --check`, and dependency

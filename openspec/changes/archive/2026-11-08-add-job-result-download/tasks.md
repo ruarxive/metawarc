@@ -41,7 +41,7 @@
 - [x] 5.2 Build and install the wheel outside the source tree; run the
       authenticated submit → wait → metadata → download workflow for all
       formats, including one 50 000-row export.
-- [ ] 5.3 Run existing claim/recovery subprocess tests and the supported
+- [x] 5.3 Run existing claim/recovery subprocess tests and the supported
       CI matrix when pushed; do not claim unexecuted matrix coverage.
 - [x] 5.4 Build documentation, sdist, and wheel; run strict OpenSpec,
       `pip check`, `uv lock --check`, `git diff --check`, and relevant
