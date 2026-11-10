@@ -143,6 +143,16 @@ def test_expanded_format_registry_and_extractors():
     assert rejected is None
     assert "refusing binary" in warnings[0]
 
+
+def test_registry_selects_link_extractor_for_html_without_expected_type():
+    registry = ExtractorRegistry()
+    extractor, _warnings = registry.select(
+        mime="text/html",
+        filename="page.html",
+        prefix=b"<html><head><title>t</title></head><body></body></html>",
+    )
+    assert extractor is not None and extractor.detected_type == "links"
+
     metadata = OoxmlExtractor().extract(ooxml_payload(), ExtractionLimits())
     assert metadata and metadata["title"] == "Example"
     archive = io.BytesIO()

@@ -104,7 +104,10 @@ class ExtractorRegistry:
             expected_type != "links"
             and _looks_like_html(prefix)
             and (mime_matches or ext_matches)
-            and not all(item.name in TEXT_EXTRACTOR_NAMES for item in (mime_matches + ext_matches))
+            and not all(
+                item.name in TEXT_EXTRACTOR_NAMES or item.detected_type == "links"
+                for item in (mime_matches + ext_matches)
+            )
         ):
             warnings.append("Payload appears to be HTML; refusing binary format selection")
             return None, warnings
