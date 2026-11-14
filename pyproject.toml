@@ -40,12 +40,12 @@ dependencies = [
 
 [project.optional-dependencies]
 api = ["fastapi>=0.115", "pydantic>=2.8", "uvicorn>=0.30"]
-mcp = ["dnspython>=2.9.0", "fastmcp>=3.4.10,<4"]
+mcp = ["dnspython>=2.9.0", "fastmcp>=3.4.10,<5"]
 replay = ["fastapi>=0.115", "pydantic>=2.8", "uvicorn>=0.30"]
 all = [
   "dnspython>=2.9.0",
   "fastapi>=0.115",
-  "fastmcp>=3.4.10,<4",
+  "fastmcp>=3.4.10,<5",
   "pydantic>=2.8",
   "uvicorn>=0.30",
 ]
